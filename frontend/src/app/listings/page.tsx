@@ -5,27 +5,16 @@ import { Navbar } from "@/components/layouts/Navbar";
 import { Footer } from "@/components/landing/Footer"; 
 import { FilterSidebar } from "@/components/listings/filters/FilterSidebar";
 import { ListingCard } from "@/components/listings/ListingCard";
-import { ListingsMap } from "@/components/listings/ListingMap"; // Ensure this matches your path
+import { ListingsMap } from "@/components/listings/ListingMap"; 
 import { Sidebar } from "@/components/layouts/Sidebar";
 import { FeatureIcons } from "@/components/layouts/FeatureIcons";
 import { Search, Map, X, SlidersHorizontal, ChevronDown, Grid } from "lucide-react";
-
-// Mock Data with Coordinates
-const MOCK_LISTINGS = [
-    { id: "1", title: "Clothes Hanger", category: "Bedroom", condition: "Used", delivery: "Pickup Only", price: "₦ 40,000", location: "Abia, Umuahia", isVerified: true, lat: 5.526, lng: 7.490, image: "https://images.unsplash.com/photo-1517153295259-74eb0b416cee?w=500" },
-    { id: "2", title: "Book Shelf Organizer", category: "Decor", condition: "New", delivery: "Delivery Available", price: "₦ 140,000", location: "Ogun, Ogere", isVerified: true, lat: 6.956, lng: 3.611, image: "https://images.unsplash.com/photo-1594620302200-9a762244a156?w=500" },
-    { id: "3", title: "Shoe Rack", category: "Furniture", condition: "Barely Used", delivery: "Both Available", price: "₦ 35,700", location: "Oyo, Ibadan", rating: 4.5, reviews: 1, lat: 7.377, lng: 3.947, image: "https://images.unsplash.com/photo-1595515106967-1b072e4a42b1?w=500" },
-    { id: "4", title: "Sofa Chair", category: "Furniture", condition: "Used", delivery: "Negotiable", price: "₦ 45,700", location: "Lagos, Gbagada", rating: 5, reviews: 2, isVerified: true, lat: 6.556, lng: 3.391, image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=500" },
-    { id: "5", title: "Wooden Dining Table Set", category: "Furniture", condition: "Barely Used", delivery: "Pickup Only", price: "₦ 450,000", location: "Oyo, Ibadan", rating: 4, reviews: 1, isVerified: true, lat: 7.400, lng: 3.900, image: "https://images.unsplash.com/photo-1617806118233-18e1de247200?w=500" },
-    { id: "6", title: "Ceramic Vases Set", category: "Decor", condition: "New", delivery: "Delivery Available", price: "₦ 45,000", location: "Lagos, Bariga", rating: 4.5, reviews: 1, lat: 6.540, lng: 3.388, image: "https://images.unsplash.com/photo-1578500494198-246f612d3b3d?w=500" },
-    { id: "7", title: "Baby Toys", category: "Baby & Kids", condition: "Needs Repair", delivery: "Both Available", price: "₦ 25,000", location: "Oyo, Ibadan", isVerified: true, lat: 7.350, lng: 3.920, image: "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=500" },
-    { id: "8", title: "Red with pillows", category: "Furniture", condition: "Used", delivery: "Pickup Only", price: "₦ 120,000", location: "Oyo, Ibadan", isVerified: true, lat: 7.380, lng: 3.950, image: "https://images.unsplash.com/photo-1505693416388-b0346efee958?w=500" },
-];
+import { MOCK_LISTINGS } from "@/lib/mockListings"; // Import shared data
 
 export default function ListingsPage() {
     const [isSidebarOpen, setSidebarOpen] = useState(false);
     const [isMobileFilterOpen, setMobileFilterOpen] = useState(false);
-    const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid'); // View Mode State
+    const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid'); 
 
     const [searchQuery, setSearchQuery] = useState("");
     const [sortBy, setSortBy] = useState("Newest");
@@ -103,7 +92,7 @@ export default function ListingsPage() {
 
     // --- FILTERING LOGIC ---
     const filteredListings = useMemo(() => {
-        let result = [...MOCK_LISTINGS];
+        let result = [...MOCK_LISTINGS]; // Using imported data
 
         if (searchQuery) {
             const lowerQuery = searchQuery.toLowerCase();
@@ -231,7 +220,6 @@ export default function ListingsPage() {
                                     </select>
                                     <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                                 </div>
-                                {/* Mobile Map Toggle Button */}
                                 <button 
                                     onClick={() => setViewMode(prev => prev === 'grid' ? 'map' : 'grid')}
                                     className="p-2 bg-white border border-gray-200 rounded-lg text-[#002147] shadow-sm" 
@@ -266,10 +254,9 @@ export default function ListingsPage() {
                             </div>
 
                             <div className="hidden md:flex items-center gap-3 shrink-0">
-                                {/* Desktop Map Toggle Button */}
                                 <button 
                                     onClick={() => setViewMode(prev => prev === 'grid' ? 'map' : 'grid')}
-                                    className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 cursor-pointer rounded-lg text-sm text-[#002147] hover:bg-gray-50 transition-colors shadow-sm" 
+                                    className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm text-[#002147] hover:bg-gray-50 transition-colors shadow-sm" 
                                     aria-label="Toggle map view"
                                 >
                                     {viewMode === 'grid' ? <><Map size={16} /> Map view</> : <><Grid size={16} /> Grid view</>}

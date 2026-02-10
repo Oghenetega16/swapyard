@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation"; //
 import { Menu } from "lucide-react";
 import Link from "next/link";
 import Logo from "@/components/ui/Logo";
@@ -11,6 +12,10 @@ interface NavbarProps {
 
 export const Navbar = ({ onOpenSidebar }: NavbarProps) => {
     const [isScrolled, setIsScrolled] = useState(false);
+    const pathname = usePathname();
+    
+    // Check if we are on the landing page
+    const isLandingPage = pathname === "/";
 
     // Track scroll position to toggle navbar style
     useEffect(() => {
@@ -26,13 +31,15 @@ export const Navbar = ({ onOpenSidebar }: NavbarProps) => {
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
+    // Determine the background class based on page and scroll state
+    const navBackgroundClass = 
+        isLandingPage && !isScrolled
+            ? "bg-transparent/10 backdrop-blur-sm py-6" // Transparent only on Landing start
+            : "bg-[#012E4C] shadow-md py-4"; // Solid Blue everywhere else
+
     return (
         <nav 
-            className={`fixed w-full z-30 top-0 text-white transition-all duration-300 ${
-                isScrolled 
-                    ? "bg-[#012E4C]/90 backdrop-blur-md shadow-md py-4" 
-                    : "bg-transparent/10 backdrop-blur-sm py-6"        
-            }`}
+            className={`fixed w-full z-30 top-0 text-white transition-all duration-300 ${navBackgroundClass}`}
             aria-label="Main Navigation"
         >
             <div className="container mx-auto px-4 md:px-8 flex justify-between items-center">
@@ -49,7 +56,7 @@ export const Navbar = ({ onOpenSidebar }: NavbarProps) => {
 
                 <div className="hidden md:flex gap-10 items-center text-sm font-medium">
                     <Link href="/" className="hover:text-[#EB3B18] transition-colors">Home</Link>
-                    <Link href="listings" className="hover:text-[#EB3B18] transition-colors">Items</Link>
+                    <Link href="/listings" className="hover:text-[#EB3B18] transition-colors">Items</Link>
                     <Link href="#" className="hover:text-[#EB3B18] transition-colors">About</Link>
                     <Link href="#" className="hover:text-[#EB3B18] transition-colors">Blog</Link>
                 </div>

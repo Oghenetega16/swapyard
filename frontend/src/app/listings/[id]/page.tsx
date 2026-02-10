@@ -9,6 +9,7 @@ import { Footer } from "@/components/landing/Footer";
 import { FeatureIcons } from "@/components/layouts/FeatureIcons";
 import { ListingCard } from "@/components/listings/ListingCard";
 import { ListingsMap } from "@/components/listings/ListingMap"; 
+import { MOCK_LISTINGS } from "@/lib/mockListings"; // 
 import { 
     MapPin, 
     Star, 
@@ -21,64 +22,67 @@ import {
     ChevronLeft
 } from "lucide-react";
 
-// --- MOCK DATA FOR THE SINGLE ITEM ---
-const ITEM_DETAILS = {
-    id: "1",
-    title: "White Leather Sofa",
-    price: "₦ 70,000",
-    originalPrice: "₦ 100,000", 
-    category: "Furniture > Sofas",
-    condition: "Barely Used",
-    description: "This sofa was bought brand new in 2023 and barely used in a smoke-free and clean home. No rips, no stains or major flaws. Cushions included. Perfect for a modern living room setup.",
-    location: "Ikeja, Lagos",
-    listedDate: "Listed 4 days ago",
-    seller: {
-        name: "Olajide Mobilade",
-        image: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100",
-        joined: "2023",
-        rating: 4.0,
-        reviewCount: 5
-    },
-    attributes: [
-        { label: "Condition", value: "Barely Used" },
-        { label: "Category", value: "Furniture > Sofas" },
-        { label: "Color", value: "White" },
-        { label: "Size", value: "Big - Kidney shaped" },
-        { label: "Item ID", value: "#23456" },
-        { label: "Delivery", value: "Available" },
-    ],
-    images: [
-        "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800", // Main
-        "https://images.unsplash.com/photo-1550226891-ef816aed4a98?w=800", // Thumb 1
-        "https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?w=800", // Thumb 2
-    ],
-    lat: 6.6018, 
-    lng: 3.3515 
-};
-
-// --- MOCK DATA FOR RELATED ITEMS ---
-const RELATED_ITEMS = [
-    { id: "2", title: "Yellow leather Arm chair", category: "Furniture", price: "₦ 85,000", location: "Oyo, Ibadan", rating: 4.5, reviews: 21, isVerified: true, image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=500" },
-    { id: "3", title: "Decorative Pillow Sofa", category: "Decor", price: "₦ 64,000", location: "Lagos, Magodo", isVerified: false, image: "https://images.unsplash.com/photo-1584100936595-c0654b55a2e6?w=500" },
-    { id: "4", title: "Dish rack- Plates and cutlery", category: "Kitchen", price: "₦ 64,000", location: "Lagos, Lekki", isVerified: false, image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=500" },
-    { id: "5", title: "Kitchen Storage rack", category: "Kitchen", price: "₦ 64,000", location: "Lagos, Lekki", isVerified: false, image: "https://images.unsplash.com/photo-1594385208974-2e75f8d7bb48?w=500" },
-];
-
 export default function ItemDetailsPage() {
     const params = useParams(); 
     const [quantity, setQuantity] = useState(1);
+
+    // --- 1. FIND THE ITEM DYNAMICALLY ---
+    const foundItem = MOCK_LISTINGS.find((item) => item.id === params.id);
+
+    // Handle case where item isn't found
+    if (!foundItem) {
+        return (
+            <div className="min-h-screen bg-[#F9FAFB] flex flex-col items-center justify-center text-[#002147]">
+                <h1 className="text-2xl font-bold mb-4">Item Not Found</h1>
+                <Link href="/listings" className="text-[#EB3B18] hover:underline flex items-center gap-2">
+                    <ChevronLeft size={20} /> Back to Listings
+                </Link>
+            </div>
+        );
+    }
+
+    // --- 2. CONSTRUCT DYNAMIC DETAILS ---
+    // Map the simple data from the list to the detailed structure your UI expects
+    const itemDetails = {
+        ...foundItem,
+        originalPrice: foundItem.price, 
+        // Use description from data or fallback
+        description: foundItem.description || `This ${foundItem.title} is listed in the ${foundItem.category} category. It is located in ${foundItem.location}. Condition: ${foundItem.condition}.`,
+        listedDate: "Listed 3 days ago", 
+        // Ensure seller object exists
+        seller: foundItem.seller || {
+            name: "Verified Seller",
+            image: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100",
+            joined: "2023",
+            rating: 4.5,
+            reviewCount: 10
+        },
+        // Build the attributes table dynamically
+        attributes: [
+            { label: "Condition", value: foundItem.condition },
+            { label: "Category", value: foundItem.category },
+            { label: "Location", value: foundItem.location },
+            { label: "Delivery", value: foundItem.delivery },
+            { label: "Item ID", value: `#${foundItem.id}00${foundItem.id}` },
+            { label: "Verified", value: foundItem.isVerified ? "Yes" : "No" },
+        ],
+        // Create an image gallery (Reusing the main image since mock data has only one)
+        images: [
+            foundItem.image,
+            foundItem.image, // Duplicate for gallery view
+            foundItem.image  // Duplicate for gallery view
+        ]
+    };
+
+    // Filter out the current item and take the first 4 remaining
+    const relatedItems = MOCK_LISTINGS.filter(item => item.id !== foundItem.id).slice(0, 4);
 
     const handleIncrement = () => setQuantity(q => q + 1);
     const handleDecrement = () => setQuantity(q => Math.max(1, q - 1));
 
     return (
-        <div className="min-h-screen bg-[#F9FAFB] font-sans text-gray-900">
+        <div className="min-h-screen bg-[#F9FAFB] text-gray-900 mt-18">
             <Navbar onOpenSidebar={() => {}} /> 
-            
-            {/* Header / Breadcrumb Placeholder */}
-            <div className="bg-[#002147] pt-18 pb-6 px-4">
-                
-            </div>
 
             <main className="container mx-auto px-4 py-8">
                 {/* --- MAIN CONTENT GRID --- */}
@@ -88,10 +92,10 @@ export default function ItemDetailsPage() {
                     <div className="lg:col-span-7">
                         <div className="grid grid-cols-2 gap-4 h-fit">
                             {/* Main Large Image */}
-                            <div className="col-span-2 relative aspect-[4/3] bg-gray-100 rounded-2xl overflow-hidden shadow-sm">
+                            <div className="col-span-2 relative aspect-4/3 bg-gray-100 rounded-2xl overflow-hidden shadow-sm">
                                 <Image 
-                                    src={ITEM_DETAILS.images[0]} 
-                                    alt={ITEM_DETAILS.title}
+                                    src={itemDetails.images[0]} 
+                                    alt={itemDetails.title}
                                     fill
                                     className="object-cover hover:scale-105 transition-transform duration-500"
                                     priority
@@ -105,8 +109,8 @@ export default function ItemDetailsPage() {
                             </div>
                             
                             {/* Sub Images */}
-                            {ITEM_DETAILS.images.slice(1).map((img, idx) => (
-                                <div key={idx} className="relative aspect-[4/3] bg-gray-100 rounded-2xl overflow-hidden shadow-sm">
+                            {itemDetails.images.slice(1).map((img, idx) => (
+                                <div key={idx} className="relative aspect-4/3 bg-gray-100 rounded-2xl overflow-hidden shadow-sm">
                                     <Image 
                                         src={img} 
                                         alt={`Product view ${idx + 2}`}
@@ -116,7 +120,7 @@ export default function ItemDetailsPage() {
                                     {idx === 1 && (
                                         <div className="absolute inset-0 flex items-center justify-center bg-black/10">
                                             <div className="w-12 h-12 bg-[#EB3B18] rounded-full flex items-center justify-center text-white shadow-lg">
-                                                <div className="w-0 h-0 border-l-[8px] border-l-white border-y-[6px] border-y-transparent ml-1"></div>
+                                                <div className="w-0 h-0 border-l-8 border-l-white border-y-[6px] border-y-transparent ml-1"></div>
                                             </div>
                                         </div>
                                     )}
@@ -139,22 +143,22 @@ export default function ItemDetailsPage() {
                         
                         {/* Title & Price Header */}
                         <div>
-                            <h1 className="text-3xl font-bold text-[#002147] mb-2">{ITEM_DETAILS.title}</h1>
+                            <h1 className="text-3xl font-bold text-[#002147] mb-2">{itemDetails.title}</h1>
                             <div className="flex items-center gap-4 mb-2">
-                                <span className="text-2xl font-extrabold text-gray-900">{ITEM_DETAILS.price}</span>
+                                <span className="text-2xl font-extrabold text-gray-900">{itemDetails.price}</span>
                                 <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full">Active listing</span>
                             </div>
                             <div className="flex items-center text-gray-500 text-sm">
                                 <MapPin size={16} className="mr-1" />
-                                {ITEM_DETAILS.location}
+                                {itemDetails.location}
                                 <span className="mx-2">•</span>
-                                {ITEM_DETAILS.listedDate}
+                                {itemDetails.listedDate}
                             </div>
                         </div>
 
                         {/* Description */}
                         <div className="text-gray-600 text-sm leading-relaxed">
-                            <p>{ITEM_DETAILS.description}</p>
+                            <p>{itemDetails.description}</p>
                         </div>
 
                         {/* Attributes Table */}
@@ -164,7 +168,7 @@ export default function ItemDetailsPage() {
                                 <span>Description</span>
                             </div>
                             <div className="bg-white">
-                                {ITEM_DETAILS.attributes.map((attr, index) => (
+                                {itemDetails.attributes.map((attr, index) => (
                                     <div key={index} className="flex justify-between px-4 py-3 text-sm border-b border-gray-100 last:border-0 hover:bg-gray-50">
                                         <span className="font-semibold text-gray-700">{attr.label}</span>
                                         <span className="text-gray-600">{attr.value}</span>
@@ -227,13 +231,13 @@ export default function ItemDetailsPage() {
                             <div className="h-48 rounded-xl overflow-hidden border border-gray-200 shadow-sm relative">
                                 <ListingsMap 
                                     listings={[{
-                                        id: ITEM_DETAILS.id,
-                                        title: ITEM_DETAILS.title,
-                                        price: ITEM_DETAILS.price,
-                                        location: ITEM_DETAILS.location,
-                                        image: ITEM_DETAILS.images[0],
-                                        lat: ITEM_DETAILS.lat,
-                                        lng: ITEM_DETAILS.lng
+                                        id: itemDetails.id,
+                                        title: itemDetails.title,
+                                        price: itemDetails.price,
+                                        location: itemDetails.location,
+                                        image: itemDetails.images[0],
+                                        lat: itemDetails.lat,
+                                        lng: itemDetails.lng
                                     }]}
                                 />
                             </div>
@@ -246,19 +250,19 @@ export default function ItemDetailsPage() {
                                 <div className="flex items-start justify-between">
                                     <div className="flex items-center gap-3">
                                         <div className="relative w-12 h-12 rounded-full overflow-hidden border border-gray-200">
-                                            <Image src={ITEM_DETAILS.seller.image} alt={ITEM_DETAILS.seller.name} fill className="object-cover" />
+                                            <Image src={itemDetails.seller.image} alt={itemDetails.seller.name} fill className="object-cover" />
                                         </div>
                                         <div>
-                                            <h4 className="font-bold text-gray-900 text-sm">{ITEM_DETAILS.seller.name} <span className="font-normal text-gray-500 text-xs">• {ITEM_DETAILS.location}</span></h4>
+                                            <h4 className="font-bold text-gray-900 text-sm">{itemDetails.seller.name} <span className="font-normal text-gray-500 text-xs">• {itemDetails.location}</span></h4>
                                             <div className="flex items-center gap-1 mt-1">
                                                 <div className="flex text-yellow-400">
                                                     {[...Array(5)].map((_, i) => (
-                                                        <Star key={i} size={12} fill={i < 4 ? "currentColor" : "none"} />
+                                                        <Star key={i} size={12} fill={i < Math.round(itemDetails.seller.rating) ? "currentColor" : "none"} />
                                                     ))}
                                                 </div>
-                                                <span className="text-xs text-gray-500">from {ITEM_DETAILS.seller.reviewCount} Review(s)</span>
+                                                <span className="text-xs text-gray-500">from {itemDetails.seller.reviewCount} Review(s)</span>
                                             </div>
-                                            <p className="text-xs text-gray-400 mt-1">Joined SwapYard in {ITEM_DETAILS.seller.joined}</p>
+                                            <p className="text-xs text-gray-400 mt-1">Joined SwapYard in {itemDetails.seller.joined}</p>
                                         </div>
                                     </div>
                                     <button 
@@ -298,7 +302,7 @@ export default function ItemDetailsPage() {
                 <div className="mb-16">
                     <h2 className="text-2xl font-bold text-[#002147] mb-6">You Might Also Like</h2>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-                        {RELATED_ITEMS.map((item) => (
+                        {relatedItems.map((item) => (
                             <ListingCard key={item.id} {...item} />
                         ))}
                     </div>
