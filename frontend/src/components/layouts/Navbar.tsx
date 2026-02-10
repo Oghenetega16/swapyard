@@ -30,8 +30,8 @@ export const Navbar = ({ onOpenSidebar }: NavbarProps) => {
         <nav 
             className={`fixed w-full z-30 top-0 text-white transition-all duration-300 ${
                 isScrolled 
-                    ? "bg-[#012E4C]/90 backdrop-blur-md shadow-md py-4" // Scrolled: Dark glass, compact
-                    : "bg-transparent/10 backdrop-blur-sm py-6"        // Top: Transparent, spacious
+                    ? "bg-[#012E4C]/90 backdrop-blur-md shadow-md py-4" 
+                    : "bg-transparent/10 backdrop-blur-sm py-6"        
             }`}
             aria-label="Main Navigation"
         >
@@ -44,13 +44,12 @@ export const Navbar = ({ onOpenSidebar }: NavbarProps) => {
                     >
                         <Menu className="text-white w-8 h-8" />
                     </button>
-                    {/* Note: Ensure Logo is visible on dark background */}
                     <Logo /> 
                 </div>
 
                 <div className="hidden md:flex gap-10 items-center text-sm font-medium">
-                    <Link href="#" className="hover:text-[#EB3B18] transition-colors">Home</Link>
-                    <Link href="#" className="hover:text-[#EB3B18] transition-colors">Items</Link>
+                    <Link href="/" className="hover:text-[#EB3B18] transition-colors">Home</Link>
+                    <Link href="listings" className="hover:text-[#EB3B18] transition-colors">Items</Link>
                     <Link href="#" className="hover:text-[#EB3B18] transition-colors">About</Link>
                     <Link href="#" className="hover:text-[#EB3B18] transition-colors">Blog</Link>
                 </div>

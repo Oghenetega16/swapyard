@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Sidebar } from "@/components/layouts/Sidebar";
 import { Navbar } from "@/components/layouts/Navbar";
 import { HeroSection } from "@/components/landing/HeroSection";
-import { FeatureIcons } from "@/components/landing/FeatureIcons";
+import { FeatureIcons } from "@/components/layouts/FeatureIcons";
 import { Categories } from "@/components/landing/Categories";
 import { LatestListings } from "@/components/landing/LatestListings";
 import { PromoSection } from "@/components/landing/PromoSection";
