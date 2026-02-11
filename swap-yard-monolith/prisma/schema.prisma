@@ -1,0 +1,180 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum Role {
+  BUYER
+  SELLER
+  ADMIN
+}
+
+enum TransactionStatus {
+  PENDING_PAYMENT
+  PAYMENT_CONFIRMED
+  ITEM_DELIVERED
+  COMPLETED
+  REFUNDED
+  CANCELLED
+}
+
+enum ListingStatus {
+  ACTIVE
+  SOLD
+  ARCHIVED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  emailVerified DateTime?
+  imageUrl      String?
+  password      String
+
+  roles UserRole[]
+
+  buyerProfile  BuyerProfile?
+  sellerProfile SellerProfile?
+
+  accounts Account[]
+  sessions Session[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UserRole {
+  id     String @id @default(cuid())
+  role   Role
+  userId String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, role])
+}
+
+model BuyerProfile {
+  id     String @id @default(cuid())
+  userId String @unique
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  transactions Transaction[]
+
+  createdAt DateTime @default(now())
+}
+
+model SellerProfile {
+  id     String @id @default(cuid())
+  userId String @unique
+
+  storeName   String
+  payoutEmail String?
+  verified    Boolean @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  listings     Listing[]
+  transactions Transaction[]
+  payouts      Payout[]
+
+  createdAt DateTime @default(now())
+}
+
+model Listing {
+  id          String        @id @default(cuid())
+  title       String
+  description String
+  price       Float
+  status      ListingStatus @default(ACTIVE)
+
+  sellerId String
+  seller   SellerProfile @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+
+  transactions Transaction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Transaction {
+  id String @id @default(cuid())
+
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id])
+
+  buyerId String
+  buyer   BuyerProfile @relation(fields: [buyerId], references: [id])
+
+  sellerId String
+  seller   SellerProfile @relation(fields: [sellerId], references: [id])
+
+  amount Float
+  status TransactionStatus @default(PENDING_PAYMENT)
+
+  paidAt      DateTime?
+  confirmedAt DateTime?
+  deliveredAt DateTime?
+  completedAt DateTime?
+  refundedAt  DateTime?
+
+  createdAt DateTime @default(now())
+  payouts   Payout[]
+}
+
+model Payout {
+  id String @id @default(cuid())
+
+  sellerId String
+  seller   SellerProfile @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+
+  transactionId String
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
+
+  amount      Float
+  processed   Boolean   @default(false)
+  processedAt DateTime?
+
+  createdAt DateTime @default(now())
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+model VerificationToken {
+  id         String   @id @default(cuid())
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
