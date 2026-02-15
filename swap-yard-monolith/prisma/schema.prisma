@@ -33,7 +33,7 @@ model User {
   name          String?
   email         String    @unique
   emailVerified DateTime?
-  imageUrl      String?
+  image      String?
   password      String?
 
   roles UserRole[]
@@ -90,6 +90,7 @@ model Listing {
   id          String        @id @default(cuid())
   title       String
   description String
+  image String
   price       Float
   status      ListingStatus @default(ACTIVE)
 
@@ -170,11 +171,12 @@ model Session {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
 model VerificationToken {
-  id         String   @id @default(cuid())
   identifier String
   token      String   @unique
   expires    DateTime
 
   @@unique([identifier, token])
 }
+
