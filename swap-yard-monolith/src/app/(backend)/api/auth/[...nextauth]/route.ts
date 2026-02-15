@@ -1,13 +1,11 @@
-import NextAuth from "next-auth"
+import NextAuth, {type NextAuthOptions} from "next-auth"
 import { PrismaAdapter} from "@next-auth/prisma-adapter"
 import { prisma } from "@/lib/prisma"
 import Google from "next-auth/providers/google"
 import Credentials from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
-import { email } from "zod"
-import { adapter } from "next/dist/server/web/adapter"
 
-export const authOptions = {
+export const authOptions: NextAuthOptions = {
 
   adapter: PrismaAdapter(prisma),
   secret: process.env.NEXTAUTH_SECRET,
@@ -51,12 +49,24 @@ export const authOptions = {
       return{
         id: user.id,
         email: user.email,
-        name: user.name,
+        name: user.name ?? user.email.split("@")[0],
         roles: user.roles.map((r:any) => r.role),
       }as any
     }})
   ],
+  callbacks:{
+    async jwt({token, user}) {
+      if(user){
+        ;(token as any).roles = (user as any).roles ?? []
+      }
+      return token
+    },
+    async session({session, token}) {
+      (session as any).user.roles = (token as any).roles ?? []
+      return session
+    },
+  }
 }
 
-const handler = NextAuth(authOptions as any)
+const handler = NextAuth(authOptions)
 export { handler as GET, handler as POST }
