@@ -30,11 +30,11 @@ enum ListingStatus {
 
 model User {
   id            String    @id @default(cuid())
-  name          String
+  name          String?
   email         String    @unique
   emailVerified DateTime?
   imageUrl      String?
-  password      String
+  password      String?
 
   roles UserRole[]
 
