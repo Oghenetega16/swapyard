@@ -38,6 +38,7 @@ export type ListingMinAggregateOutputType = {
   id: string | null
   title: string | null
   description: string | null
+  image: string | null
   price: number | null
   status: $Enums.ListingStatus | null
   sellerId: string | null
@@ -49,6 +50,7 @@ export type ListingMaxAggregateOutputType = {
   id: string | null
   title: string | null
   description: string | null
+  image: string | null
   price: number | null
   status: $Enums.ListingStatus | null
   sellerId: string | null
@@ -60,6 +62,7 @@ export type ListingCountAggregateOutputType = {
   id: number
   title: number
   description: number
+  image: number
   price: number
   status: number
   sellerId: number
@@ -81,6 +84,7 @@ export type ListingMinAggregateInputType = {
   id?: true
   title?: true
   description?: true
+  image?: true
   price?: true
   status?: true
   sellerId?: true
@@ -92,6 +96,7 @@ export type ListingMaxAggregateInputType = {
   id?: true
   title?: true
   description?: true
+  image?: true
   price?: true
   status?: true
   sellerId?: true
@@ -103,6 +108,7 @@ export type ListingCountAggregateInputType = {
   id?: true
   title?: true
   description?: true
+  image?: true
   price?: true
   status?: true
   sellerId?: true
@@ -201,6 +207,7 @@ export type ListingGroupByOutputType = {
   id: string
   title: string
   description: string
+  image: string
   price: number
   status: $Enums.ListingStatus
   sellerId: string
@@ -235,6 +242,7 @@ export type ListingWhereInput = {
   id?: Prisma.StringFilter<"Listing"> | string
   title?: Prisma.StringFilter<"Listing"> | string
   description?: Prisma.StringFilter<"Listing"> | string
+  image?: Prisma.StringFilter<"Listing"> | string
   price?: Prisma.FloatFilter<"Listing"> | number
   status?: Prisma.EnumListingStatusFilter<"Listing"> | $Enums.ListingStatus
   sellerId?: Prisma.StringFilter<"Listing"> | string
@@ -248,6 +256,7 @@ export type ListingOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   title?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  image?: Prisma.SortOrder
   price?: Prisma.SortOrder
   status?: Prisma.SortOrder
   sellerId?: Prisma.SortOrder
@@ -265,6 +274,7 @@ export type ListingWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.ListingWhereInput | Prisma.ListingWhereInput[]
   title?: Prisma.StringFilter<"Listing"> | string
   description?: Prisma.StringFilter<"Listing"> | string
+  image?: Prisma.StringFilter<"Listing"> | string
   price?: Prisma.FloatFilter<"Listing"> | number
   status?: Prisma.EnumListingStatusFilter<"Listing"> | $Enums.ListingStatus
   sellerId?: Prisma.StringFilter<"Listing"> | string
@@ -278,6 +288,7 @@ export type ListingOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   title?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  image?: Prisma.SortOrder
   price?: Prisma.SortOrder
   status?: Prisma.SortOrder
   sellerId?: Prisma.SortOrder
@@ -297,6 +308,7 @@ export type ListingScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"Listing"> | string
   title?: Prisma.StringWithAggregatesFilter<"Listing"> | string
   description?: Prisma.StringWithAggregatesFilter<"Listing"> | string
+  image?: Prisma.StringWithAggregatesFilter<"Listing"> | string
   price?: Prisma.FloatWithAggregatesFilter<"Listing"> | number
   status?: Prisma.EnumListingStatusWithAggregatesFilter<"Listing"> | $Enums.ListingStatus
   sellerId?: Prisma.StringWithAggregatesFilter<"Listing"> | string
@@ -308,6 +320,7 @@ export type ListingCreateInput = {
   id?: string
   title: string
   description: string
+  image: string
   price: number
   status?: $Enums.ListingStatus
   createdAt?: Date | string
@@ -320,6 +333,7 @@ export type ListingUncheckedCreateInput = {
   id?: string
   title: string
   description: string
+  image: string
   price: number
   status?: $Enums.ListingStatus
   sellerId: string
@@ -332,6 +346,7 @@ export type ListingUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  image?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.FloatFieldUpdateOperationsInput | number
   status?: Prisma.EnumListingStatusFieldUpdateOperationsInput | $Enums.ListingStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -344,6 +359,7 @@ export type ListingUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  image?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.FloatFieldUpdateOperationsInput | number
   status?: Prisma.EnumListingStatusFieldUpdateOperationsInput | $Enums.ListingStatus
   sellerId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -356,6 +372,7 @@ export type ListingCreateManyInput = {
   id?: string
   title: string
   description: string
+  image: string
   price: number
   status?: $Enums.ListingStatus
   sellerId: string
@@ -367,6 +384,7 @@ export type ListingUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  image?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.FloatFieldUpdateOperationsInput | number
   status?: Prisma.EnumListingStatusFieldUpdateOperationsInput | $Enums.ListingStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -377,6 +395,7 @@ export type ListingUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  image?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.FloatFieldUpdateOperationsInput | number
   status?: Prisma.EnumListingStatusFieldUpdateOperationsInput | $Enums.ListingStatus
   sellerId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -404,6 +423,7 @@ export type ListingCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   title?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  image?: Prisma.SortOrder
   price?: Prisma.SortOrder
   status?: Prisma.SortOrder
   sellerId?: Prisma.SortOrder
@@ -419,6 +439,7 @@ export type ListingMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   title?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  image?: Prisma.SortOrder
   price?: Prisma.SortOrder
   status?: Prisma.SortOrder
   sellerId?: Prisma.SortOrder
@@ -430,6 +451,7 @@ export type ListingMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   title?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  image?: Prisma.SortOrder
   price?: Prisma.SortOrder
   status?: Prisma.SortOrder
   sellerId?: Prisma.SortOrder
@@ -518,6 +540,7 @@ export type ListingCreateWithoutSellerInput = {
   id?: string
   title: string
   description: string
+  image: string
   price: number
   status?: $Enums.ListingStatus
   createdAt?: Date | string
@@ -529,6 +552,7 @@ export type ListingUncheckedCreateWithoutSellerInput = {
   id?: string
   title: string
   description: string
+  image: string
   price: number
   status?: $Enums.ListingStatus
   createdAt?: Date | string
@@ -569,6 +593,7 @@ export type ListingScalarWhereInput = {
   id?: Prisma.StringFilter<"Listing"> | string
   title?: Prisma.StringFilter<"Listing"> | string
   description?: Prisma.StringFilter<"Listing"> | string
+  image?: Prisma.StringFilter<"Listing"> | string
   price?: Prisma.FloatFilter<"Listing"> | number
   status?: Prisma.EnumListingStatusFilter<"Listing"> | $Enums.ListingStatus
   sellerId?: Prisma.StringFilter<"Listing"> | string
@@ -580,6 +605,7 @@ export type ListingCreateWithoutTransactionsInput = {
   id?: string
   title: string
   description: string
+  image: string
   price: number
   status?: $Enums.ListingStatus
   createdAt?: Date | string
@@ -591,6 +617,7 @@ export type ListingUncheckedCreateWithoutTransactionsInput = {
   id?: string
   title: string
   description: string
+  image: string
   price: number
   status?: $Enums.ListingStatus
   sellerId: string
@@ -618,6 +645,7 @@ export type ListingUpdateWithoutTransactionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  image?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.FloatFieldUpdateOperationsInput | number
   status?: Prisma.EnumListingStatusFieldUpdateOperationsInput | $Enums.ListingStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -629,6 +657,7 @@ export type ListingUncheckedUpdateWithoutTransactionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  image?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.FloatFieldUpdateOperationsInput | number
   status?: Prisma.EnumListingStatusFieldUpdateOperationsInput | $Enums.ListingStatus
   sellerId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -640,6 +669,7 @@ export type ListingCreateManySellerInput = {
   id?: string
   title: string
   description: string
+  image: string
   price: number
   status?: $Enums.ListingStatus
   createdAt?: Date | string
@@ -650,6 +680,7 @@ export type ListingUpdateWithoutSellerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  image?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.FloatFieldUpdateOperationsInput | number
   status?: Prisma.EnumListingStatusFieldUpdateOperationsInput | $Enums.ListingStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -661,6 +692,7 @@ export type ListingUncheckedUpdateWithoutSellerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  image?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.FloatFieldUpdateOperationsInput | number
   status?: Prisma.EnumListingStatusFieldUpdateOperationsInput | $Enums.ListingStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -672,6 +704,7 @@ export type ListingUncheckedUpdateManyWithoutSellerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  image?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.FloatFieldUpdateOperationsInput | number
   status?: Prisma.EnumListingStatusFieldUpdateOperationsInput | $Enums.ListingStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -713,6 +746,7 @@ export type ListingSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   id?: boolean
   title?: boolean
   description?: boolean
+  image?: boolean
   price?: boolean
   status?: boolean
   sellerId?: boolean
@@ -729,6 +763,7 @@ export type ListingSelectScalar = {
   id?: boolean
   title?: boolean
   description?: boolean
+  image?: boolean
   price?: boolean
   status?: boolean
   sellerId?: boolean
@@ -736,7 +771,7 @@ export type ListingSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ListingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "description" | "price" | "status" | "sellerId" | "createdAt" | "updatedAt", ExtArgs["result"]["listing"]>
+export type ListingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "description" | "image" | "price" | "status" | "sellerId" | "createdAt" | "updatedAt", ExtArgs["result"]["listing"]>
 export type ListingInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   seller?: boolean | Prisma.SellerProfileDefaultArgs<ExtArgs>
   transactions?: boolean | Prisma.Listing$transactionsArgs<ExtArgs>
@@ -753,6 +788,7 @@ export type $ListingPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     id: string
     title: string
     description: string
+    image: string
     price: number
     status: $Enums.ListingStatus
     sellerId: string
@@ -1132,6 +1168,7 @@ export interface ListingFieldRefs {
   readonly id: Prisma.FieldRef<"Listing", 'String'>
   readonly title: Prisma.FieldRef<"Listing", 'String'>
   readonly description: Prisma.FieldRef<"Listing", 'String'>
+  readonly image: Prisma.FieldRef<"Listing", 'String'>
   readonly price: Prisma.FieldRef<"Listing", 'Float'>
   readonly status: Prisma.FieldRef<"Listing", 'ListingStatus'>
   readonly sellerId: Prisma.FieldRef<"Listing", 'String'>

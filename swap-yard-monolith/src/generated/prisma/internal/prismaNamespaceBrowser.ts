@@ -84,7 +84,7 @@ export const UserScalarFieldEnum = {
   name: 'name',
   email: 'email',
   emailVerified: 'emailVerified',
-  imageUrl: 'imageUrl',
+  image: 'image',
   password: 'password',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -127,6 +127,7 @@ export const ListingScalarFieldEnum = {
   id: 'id',
   title: 'title',
   description: 'description',
+  image: 'image',
   price: 'price',
   status: 'status',
   sellerId: 'sellerId',
@@ -226,7 +227,7 @@ export const UserOrderByRelevanceFieldEnum = {
   id: 'id',
   name: 'name',
   email: 'email',
-  imageUrl: 'imageUrl',
+  image: 'image',
   password: 'password'
 } as const
 
@@ -263,6 +264,7 @@ export const ListingOrderByRelevanceFieldEnum = {
   id: 'id',
   title: 'title',
   description: 'description',
+  image: 'image',
   sellerId: 'sellerId'
 } as const
 
