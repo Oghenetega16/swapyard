@@ -9,12 +9,6 @@
  * 🟢 You can import this file directly.
  */
 export type * from './models/User'
-export type * from './models/UserRole'
-export type * from './models/BuyerProfile'
-export type * from './models/SellerProfile'
-export type * from './models/Listing'
-export type * from './models/Transaction'
-export type * from './models/Payout'
 export type * from './models/Account'
 export type * from './models/Session'
 export type * from './models/VerificationToken'

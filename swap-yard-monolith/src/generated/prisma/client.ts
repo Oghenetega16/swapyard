@@ -45,36 +45,6 @@ export { Prisma }
  */
 export type User = Prisma.UserModel
 /**
- * Model UserRole
- * 
- */
-export type UserRole = Prisma.UserRoleModel
-/**
- * Model BuyerProfile
- * 
- */
-export type BuyerProfile = Prisma.BuyerProfileModel
-/**
- * Model SellerProfile
- * 
- */
-export type SellerProfile = Prisma.SellerProfileModel
-/**
- * Model Listing
- * 
- */
-export type Listing = Prisma.ListingModel
-/**
- * Model Transaction
- * 
- */
-export type Transaction = Prisma.TransactionModel
-/**
- * Model Payout
- * 
- */
-export type Payout = Prisma.PayoutModel
-/**
  * Model Account
  * 
  */
