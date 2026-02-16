@@ -1,6 +1,8 @@
 "use client";
 
 import AuthLayout from "@/components/layouts/AuthLayout";
+import { useState } from "react";
+import {signIn} from "next-auth/react";
 import { Input } from "@/components/ui/Input";
 import { Lock } from "lucide-react";
 import Link from "next/link";
@@ -23,6 +25,7 @@ const AppleIcon = () => (
 );
 
 export default function LoginPage() {
+    const [loading, setLoading] = useState(false);
     const LoginIllustration = (
         <div className="space-y-6">
             <h2 className="text-3xl font-bold text-gray-800 mb-6">Welcome Back!</h2>
@@ -78,8 +81,23 @@ export default function LoginPage() {
                             type="button"
                             className="p-3 rounded-full cursor-pointer shadow-sm border border-gray-100 hover:bg-gray-50 transition-colors"
                             aria-label="Continue with Google"
+                            disabled={loading}
+
+                            onClick={async () =>{
+                                try{
+                                    setLoading(true);
+                                    await signIn("google", {callbackUrl: "/"});
+
+                                } finally{
+                                    setTimeout(() => setLoading(false), 3000); 
+                                }
+                            }}
                         >
                             <GoogleIcon />
+
+                            {loading && (
+            <span className="absolute -right-2 -top-2 h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-transparent" />
+          )}
                         </button>
                         
                         <button
