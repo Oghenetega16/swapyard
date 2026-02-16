@@ -59,6 +59,7 @@ model Session {
 }
  
 model VerificationToken {
+  id         Int      @id @default(autoincrement())
   identifier String
   token      String
   expires    DateTime
