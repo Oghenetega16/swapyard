@@ -715,6 +715,7 @@ export const UserScalarFieldEnum = {
   name: 'name',
   username: 'username',
   email: 'email',
+  password: 'password',
   emailVerified: 'emailVerified',
   image: 'image',
   createdAt: 'createdAt',
@@ -787,6 +788,7 @@ export const UserOrderByRelevanceFieldEnum = {
   name: 'name',
   username: 'username',
   email: 'email',
+  password: 'password',
   image: 'image'
 } as const
 
