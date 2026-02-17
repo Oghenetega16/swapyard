@@ -112,7 +112,7 @@ export default function LoginPage() {
                     <div className="text-center mt-8 text-sm text-gray-600">
                         New to Swapyard?{" "}
                         <Link
-                            href="/signup"
+                            href="/auth/signup"
                             className="text-[#D84315] font-bold hover:underline"
                         >
                             Create account

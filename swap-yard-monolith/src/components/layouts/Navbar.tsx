@@ -57,13 +57,13 @@ export const Navbar = ({ onOpenSidebar }: NavbarProps) => {
                 
                 <div className="hidden md:flex gap-3">
                     <Link 
-                        href="/login" 
+                        href="/auth/login" 
                         className="px-4 py-2 hover:text-gray-200 transition-colors"
                     >
                         Log In
                     </Link>
                     <Link 
-                        href="/signup" 
+                        href="/auth/signup" 
                         className="px-5 py-2 bg-[#EB3B18] rounded-md font-bold hover:bg-[#bf360c] transition-colors shadow-sm"
                     >
                         Sign Up
