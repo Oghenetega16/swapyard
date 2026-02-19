@@ -1,187 +1,321 @@
 "use client";
 
-import { useState } from "react";
-import { Navbar } from "@/components/layouts/Navbar"; // Reusing your Navbar
-import { Footer } from "@/components/landing/Footer"; // Reusing your Footer
-import { FilterSidebar } from "@/components/listings/FilterSidebar";
+import { useState, useMemo } from "react";
+import { Navbar } from "@/components/layouts/Navbar"; 
+import { Footer } from "@/components/landing/Footer"; 
+import { FilterSidebar } from "@/components/listings/filters/FilterSidebar";
 import { ListingCard } from "@/components/listings/ListingCard";
+import { ListingsMap } from "@/components/listings/ListingMap"; 
 import { Sidebar } from "@/components/layouts/Sidebar";
-import { Search, Map, MapPin, X, SlidersHorizontal, ChevronDown } from "lucide-react";
-
-// Mock Data
-const MOCK_LISTINGS = [
-  { id: "1", title: "Clothes Hanger", category: "Bedroom", price: "₦ 40,000", location: "Abia, Umuahia", isVerified: true, image: "https://images.unsplash.com/photo-1517153295259-74eb0b416cee?w=500" },
-  { id: "2", title: "Book Shelf Organizer", category: "Decor", price: "₦ 140,000", location: "Ogun, Ogere", isVerified: true, image: "https://images.unsplash.com/photo-1594620302200-9a762244a156?w=500" },
-  { id: "3", title: "Shoe Rack", category: "Furniture", price: "₦ 35,700", location: "Oyo, Ibadan", rating: 4.5, reviews: 1, image: "https://images.unsplash.com/photo-1595515106967-1b072e4a42b1?w=500" },
-  { id: "4", title: "Sofa Chair", category: "Furniture", price: "₦ 45,700", location: "Lagos, Gbagada", rating: 5, reviews: 2, isVerified: true, image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=500" },
-  { id: "5", title: "Wooden Dining Table Set", category: "Furniture", price: "₦ 450,000", location: "Oyo, Ibadan", rating: 4, reviews: 1, isVerified: true, image: "https://images.unsplash.com/photo-1617806118233-18e1de247200?w=500" },
-  { id: "6", title: "Ceramic Vases Set", category: "Decor", price: "₦ 45,000", location: "Lagos, Bariga", rating: 4.5, reviews: 1, image: "https://images.unsplash.com/photo-1578500494198-246f612d3b3d?w=500" },
-  { id: "7", title: "Baby Toys", category: "Baby & Kids", price: "₦ 25,000", location: "Oyo, Ibadan", isVerified: true, image: "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=500" },
-  { id: "8", title: "Red with pillows", category: "Furniture", price: "₦ 120,000", location: "Oyo, Ibadan", isVerified: true, image: "https://images.unsplash.com/photo-1505693416388-b0346efee958?w=500" },
-];
+import { FeatureIcons } from "@/components/layouts/FeatureIcons";
+import { Search, Map, X, SlidersHorizontal, ChevronDown, Grid } from "lucide-react";
+import { MOCK_LISTINGS } from "@/lib/mockListings"; // Import shared data
 
 export default function ListingsPage() {
-  const [isSidebarOpen, setSidebarOpen] = useState(false);
-  const [isMobileFilterOpen, setMobileFilterOpen] = useState(false);
+    const [isSidebarOpen, setSidebarOpen] = useState(false);
+    const [isMobileFilterOpen, setMobileFilterOpen] = useState(false);
+    const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid'); 
 
-  return (
-    <div className="min-h-screen bg-[#F9FAFB] font-sans text-gray-900">
-       <Sidebar isOpen={isSidebarOpen} onClose={() => setSidebarOpen(false)} />
-       {/* Use a darkened Navbar if you want it visible over the dark header, or default */}
-       <Navbar onOpenSidebar={() => setSidebarOpen(true)} />
+    const [searchQuery, setSearchQuery] = useState("");
+    const [sortBy, setSortBy] = useState("Newest");
+    
+    // Filter States
+    const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+    const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
+    const [priceRange, setPriceRange] = useState({ min: 0, max: 1000000 });
+    const [location, setLocation] = useState({ state: "", city: "" });
+    const [isVerified, setIsVerified] = useState(false);
+    const [selectedDelivery, setSelectedDelivery] = useState<string[]>([]);
 
-       {/* Header Section */}
-       <div className="bg-[#002147] pt-28 pb-12 px-4">
-           <div className="container mx-auto">
-               <h1 className="text-3xl md:text-4xl font-bold text-white text-center md:text-left">Listings</h1>
-           </div>
-       </div>
+    // --- DERIVE ACTIVE FILTERS ---
+    const currentActiveFilters = [
+        ...selectedCategories.map(cat => ({ type: 'category', label: cat, value: cat })),
+        ...selectedConditions.map(cond => ({ type: 'condition', label: cond, value: cond })),
+        ...selectedDelivery.map(del => ({ type: 'delivery', label: del, value: del })),
+        ...(priceRange.min > 0 || priceRange.max < 1000000 
+            ? [{ type: 'price', label: `₦${priceRange.min.toLocaleString()} - ₦${priceRange.max.toLocaleString()}`, value: 'price' }] 
+            : []),
+        ...(location.state ? [{ type: 'location-state', label: location.state, value: 'state' }] : []),
+        ...(location.city ? [{ type: 'location-city', label: location.city, value: 'city' }] : []),
+        ...(isVerified ? [{ type: 'verified', label: 'Verified Seller', value: 'verified' }] : [])
+    ];
 
-       <main className="container mx-auto px-4 py-8">
-           
-           {/* Search Bar - Desktop style sitting above grid */}
-           <div className="mb-6 relative max-w-2xl">
-               <input 
-                  type="text" 
-                  placeholder="Search for items" 
-                  className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#002147] shadow-sm"
-               />
-               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-           </div>
+    // --- HANDLERS ---
+    const toggleCategory = (category: string) => {
+        setSelectedCategories(prev => prev.includes(category) ? prev.filter(c => c !== category) : [...prev, category]);
+    };
 
-           <div className="flex flex-col md:flex-row gap-8">
-               
-               {/* Left Sidebar - Desktop */}
-               <div className="hidden md:block w-64 shrink-0">
-                   <FilterSidebar />
-               </div>
+    const toggleCondition = (condition: string) => {
+        setSelectedConditions(prev => prev.includes(condition) ? prev.filter(c => c !== condition) : [...prev, condition]);
+    };
 
-               {/* Mobile Filter Drawer (Hidden by default) */}
-               {isMobileFilterOpen && (
-                   <div className="fixed inset-0 z-50 bg-black/50 md:hidden" onClick={() => setMobileFilterOpen(false)}>
-                       <div className="absolute right-0 top-0 bottom-0 w-[85%] bg-white p-4 overflow-y-auto" onClick={e => e.stopPropagation()}>
-                           <FilterSidebar />
-                       </div>
-                   </div>
-               )}
+    const handlePriceChange = (type: 'min' | 'max', value: number) => {
+        setPriceRange(p => ({ ...p, [type]: type === 'min' ? Math.min(value, p.max - 1000) : Math.max(value, p.min + 1000) }));
+    };
 
-               {/* Main Content */}
-               <div className="flex-1">
-                   
-                   {/* Filters Toolbar */}
-                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                       
-                       {/* Mobile Tools Row */}
-                       <div className="flex items-center gap-3 md:hidden">
-                            <button 
-                                onClick={() => setMobileFilterOpen(true)}
-                                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-700 shadow-sm flex-1 justify-center"
-                            >
-                                <SlidersHorizontal size={16} /> Filter
-                            </button>
-                            <div className="relative flex-1">
-                                <select className="w-full appearance-none px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-700 shadow-sm focus:outline-none">
-                                    <option>Newest</option>
-                                    <option>Oldest</option>
-                                    <option>Price: Low to High</option>
-                                </select>
-                                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+    const handleLocationChange = (type: 'state' | 'city', value: string) => {
+        setLocation(prev => ({ 
+            ...prev, 
+            [type]: value,
+            city: type === 'state' ? "" : (type === 'city' ? value : prev.city)
+        }));
+    };
+
+    const toggleVerified = () => {
+        setIsVerified(prev => !prev);
+    };
+
+    const toggleDelivery = (option: string) => {
+        setSelectedDelivery(prev => prev.includes(option) ? prev.filter(o => o !== option) : [...prev, option]);
+    };
+
+    const removeFilter = (filter: { type: string, value: string }) => {
+        switch (filter.type) {
+            case 'category': toggleCategory(filter.value); break;
+            case 'condition': toggleCondition(filter.value); break;
+            case 'delivery': toggleDelivery(filter.value); break;
+            case 'price': setPriceRange({ min: 0, max: 1000000 }); break;
+            case 'location-state': setLocation({ state: "", city: "" }); break;
+            case 'location-city': setLocation(prev => ({ ...prev, city: "" })); break;
+            case 'verified': setIsVerified(false); break;
+        }
+    };
+
+    const clearAllFilters = () => {
+        setSelectedCategories([]);
+        setSelectedConditions([]);
+        setPriceRange({ min: 0, max: 1000000 });
+        setLocation({ state: "", city: "" });
+        setIsVerified(false);
+        setSelectedDelivery([]);
+    };
+
+    // --- FILTERING LOGIC ---
+    const filteredListings = useMemo(() => {
+        let result = [...MOCK_LISTINGS]; // Using imported data
+
+        if (searchQuery) {
+            const lowerQuery = searchQuery.toLowerCase();
+            result = result.filter(item => 
+                item.title.toLowerCase().includes(lowerQuery) || 
+                item.category.toLowerCase().includes(lowerQuery)
+            );
+        }
+
+        if (selectedCategories.length > 0) {
+            result = result.filter(item => selectedCategories.includes(item.category));
+        }
+
+        if (selectedConditions.length > 0) {
+            result = result.filter(item => selectedConditions.includes(item.condition));
+        }
+
+        result = result.filter(item => {
+            const price = parseInt(item.price.replace(/[^0-9]/g, ''));
+            return price >= priceRange.min && price <= priceRange.max;
+        });
+
+        if (location.state) result = result.filter(item => item.location.includes(location.state));
+        if (location.city) result = result.filter(item => item.location.includes(location.city));
+        if (isVerified) result = result.filter(item => item.isVerified === true);
+        if (selectedDelivery.length > 0) result = result.filter(item => selectedDelivery.includes(item.delivery!));
+
+        result.sort((a, b) => {
+            const priceA = parseInt(a.price.replace(/[^0-9]/g, ''));
+            const priceB = parseInt(b.price.replace(/[^0-9]/g, ''));
+
+        switch (sortBy) {
+            case "Price: Low to High": return priceA - priceB;
+            case "Price: High to Low": return priceB - priceA;
+            case "A-Z": return a.title.localeCompare(b.title);
+            case "Oldest": return parseInt(a.id) - parseInt(b.id);
+            case "Newest": default: return parseInt(b.id) - parseInt(a.id);
+        }
+    });
+
+    return result;
+}, [searchQuery, sortBy, selectedCategories, selectedConditions, priceRange, location, isVerified, selectedDelivery]);
+
+    return (
+        <div className="min-h-screen bg-[#F9FAFB] font-sans text-gray-900">
+            <Sidebar isOpen={isSidebarOpen} onClose={() => setSidebarOpen(false)} />
+            <Navbar onOpenSidebar={() => setSidebarOpen(true)} />
+
+            <div className="bg-[#002147] pt-10 pb-12 px-4"></div>
+
+            <main className="container mx-auto px-4 py-8">
+                {/* Search Bar */}
+                <div className="flex justify-end mb-6">
+                    <div className="relative w-full max-w-md">
+                        <input 
+                            type="text" 
+                            placeholder="Search for items" 
+                            aria-label="Search listings"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-12 pr-4 py-1 placeholder:text-sm rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#002147]"
+                        />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                    </div>
+                </div>
+
+                <div className="flex flex-col md:flex-row gap-8">
+                    <div className="hidden md:block w-64 shrink-0">
+                        <FilterSidebar 
+                            selectedCategories={selectedCategories} 
+                            onToggleCategory={toggleCategory}
+                            selectedConditions={selectedConditions}
+                            onToggleCondition={toggleCondition}
+                            priceRange={priceRange}
+                            onPriceChange={handlePriceChange}
+                            location={location}
+                            onLocationChange={handleLocationChange}
+                            isVerified={isVerified}
+                            onToggleVerified={toggleVerified}
+                            selectedDelivery={selectedDelivery}
+                            onToggleDelivery={toggleDelivery}
+                        />
+                    </div>
+
+                    {isMobileFilterOpen && (
+                        <div className="fixed inset-0 z-50 bg-black/50 md:hidden" onClick={() => setMobileFilterOpen(false)}>
+                            <div className="absolute right-0 top-0 bottom-0 w-[85%] bg-white p-4 overflow-y-auto" onClick={e => e.stopPropagation()}>
+                                <FilterSidebar 
+                                    selectedCategories={selectedCategories} 
+                                    onToggleCategory={toggleCategory}
+                                    selectedConditions={selectedConditions}
+                                    onToggleCondition={toggleCondition}
+                                    priceRange={priceRange}
+                                    onPriceChange={handlePriceChange}
+                                    location={location}
+                                    onLocationChange={handleLocationChange}
+                                    isVerified={isVerified}
+                                    onToggleVerified={toggleVerified}
+                                    selectedDelivery={selectedDelivery}
+                                    onToggleDelivery={toggleDelivery}
+                                />
                             </div>
-                            <button className="p-2 bg-white border border-gray-200 rounded-lg text-[#002147] shadow-sm">
-                                <Map size={20} />
-                            </button>
-                       </div>
+                        </div>
+                    )}
 
-                       {/* Desktop Active Filters & Tools */}
-                       <div className="hidden md:flex flex-wrap items-center gap-2">
-                           <span className="text-sm font-medium text-gray-600 mr-2">Active Filters:</span>
-                           <div className="flex items-center gap-1 px-3 py-1 bg-white border border-gray-200 rounded-full text-xs font-bold text-gray-700">
-                               Barely Used <X size={12} className="ml-1 cursor-pointer hover:text-red-500"/>
-                           </div>
-                           <div className="flex items-center gap-1 px-3 py-1 bg-white border border-gray-200 rounded-full text-xs font-bold text-gray-700">
-                               Delivery Available <X size={12} className="ml-1 cursor-pointer hover:text-red-500"/>
-                           </div>
-                           <div className="flex items-center gap-1 px-3 py-1 bg-white border border-gray-200 rounded-full text-xs font-bold text-gray-700">
-                               ₦10,000-₦50,000 <X size={12} className="ml-1 cursor-pointer hover:text-red-500"/>
-                           </div>
-                           <button className="text-xs font-bold text-[#D84315] hover:underline ml-2">Clear All</button>
-                       </div>
-
-                       <div className="hidden md:flex items-center gap-3">
-                           <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-bold text-[#002147] hover:bg-gray-50 transition-colors shadow-sm">
-                               <Map size={16} /> Map view
-                           </button>
-                           <div className="flex items-center gap-2">
-                               <span className="text-sm text-gray-500">Sort by:</span>
-                               <div className="relative">
-                                    <select className="appearance-none pl-3 pr-8 py-2 bg-transparent font-bold text-sm text-gray-900 cursor-pointer focus:outline-none">
+                    <div className="flex-1">
+                        {/* Filters Toolbar */}
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                            <div className="flex items-center gap-3 md:hidden">
+                                <button onClick={() => setMobileFilterOpen(true)} aria-label="Open filters" className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-700 shadow-sm flex-1 justify-center">
+                                    <SlidersHorizontal size={16} /> Filter
+                                </button>
+                                <div className="relative flex-1">
+                                    <select 
+                                        className="w-full appearance-none px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-700 shadow-sm focus:outline-none"
+                                        aria-label="Sort listings"
+                                        value={sortBy}
+                                        onChange={(e) => setSortBy(e.target.value)}
+                                    >
                                         <option>Newest</option>
                                         <option>Oldest</option>
+                                        <option>Price: Low to High</option>
+                                        <option>Price: High to Low</option>
                                         <option>A-Z</option>
                                     </select>
-                                    <ChevronDown size={14} className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
-                               </div>
-                           </div>
-                       </div>
-                   </div>
+                                    <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                                </div>
+                                <button 
+                                    onClick={() => setViewMode(prev => prev === 'grid' ? 'map' : 'grid')}
+                                    className="p-2 bg-white border border-gray-200 rounded-lg text-[#002147] shadow-sm" 
+                                    aria-label="Toggle map view"
+                                >
+                                    {viewMode === 'grid' ? <Map size={20} /> : <Grid size={20} />}
+                                </button>
+                            </div>
 
-                   {/* Results Count */}
-                   <p className="text-sm text-gray-500 mb-6">Showing 1-14 Of 40 results</p>
+                            {/* Desktop Active Filters Display */}
+                            <div className="hidden md:flex flex-wrap items-center gap-2 flex-1">
+                                {currentActiveFilters.length > 0 && (
+                                    <span className="text-sm font-medium text-gray-600 mr-2">Active Filters:</span>
+                                )}
+                                
+                                {currentActiveFilters.map((filter, index) => (
+                                    <div key={`${filter.type}-${filter.value}-${index}`} className="flex items-center gap-1 px-3 py-1 bg-white border border-gray-200 rounded-full text-xs font-bold text-gray-700 animate-in fade-in zoom-in duration-200">
+                                        {filter.label} 
+                                        <button 
+                                            onClick={() => removeFilter(filter)} 
+                                            aria-label={`Remove filter ${filter.label}`} 
+                                            className="focus:outline-none"
+                                        >
+                                            <X size={12} className="ml-1 cursor-pointer hover:text-[#EB3B18]"/>
+                                        </button>
+                                    </div>
+                                ))}
+                                
+                                {currentActiveFilters.length > 0 && (
+                                    <button onClick={clearAllFilters} className="text-xs font-bold text-[#D84315] hover:underline ml-2" aria-label="Clear all filters">Clear All</button>
+                                )}
+                            </div>
 
-                   {/* Product Grid */}
-                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-                       {MOCK_LISTINGS.map((item) => (
-                           <ListingCard 
-                                key={item.id}
-                                {...item}
-                           />
-                       ))}
-                   </div>
+                            <div className="hidden md:flex items-center gap-3 shrink-0">
+                                <button 
+                                    onClick={() => setViewMode(prev => prev === 'grid' ? 'map' : 'grid')}
+                                    className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm text-[#002147] hover:bg-gray-50 transition-colors shadow-sm" 
+                                    aria-label="Toggle map view"
+                                >
+                                    {viewMode === 'grid' ? <><Map size={16} /> Map view</> : <><Grid size={16} /> Grid view</>}
+                                </button>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm text-gray-500 font-bold">Sort by:</span>
+                                    <div className="relative">
+                                        <select 
+                                            className="appearance-none pl-1 pr-8 py-2 bg-transparent text-sm text-gray-900 cursor-pointer focus:outline-none" 
+                                            aria-label="Sort listings" 
+                                            value={sortBy} 
+                                            onChange={(e) => setSortBy(e.target.value)}
+                                        >
+                                            <option>Newest</option>
+                                            <option>Oldest</option>
+                                            <option>Price: Low to High</option>
+                                            <option>Price: High to Low</option>
+                                            <option>A-Z</option>
+                                        </select>
+                                        <ChevronDown size={14} className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                   {/* Load More */}
-                   <div className="mt-12 flex justify-center">
-                       <button className="px-8 py-3 bg-white border border-gray-200 text-[#D84315] font-bold rounded-lg hover:bg-[#D84315] hover:text-white transition-all shadow-sm">
-                           Load More
-                       </button>
-                   </div>
-               </div>
-           </div>
-       </main>
+                        <p className="text-sm text-gray-500 mb-6">
+                            Showing {filteredListings.length > 0 ? 1 : 0}-{filteredListings.length} Of {filteredListings.length} results
+                        </p>
 
-       {/* Banner Section above Footer */}
-       <div className="bg-[#F3F4F6] py-12 mt-12">
-            <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
-                <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-full bg-[#002147] flex items-center justify-center shrink-0">
-                        <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-                    </div>
-                    <div>
-                        <h3 className="font-bold text-[#002147] mb-1">Secure Transactions</h3>
-                        <p className="text-sm text-gray-600">Your transactions are secure and with the latest encryption.</p>
+                        {/* --- CONDITIONAL RENDERING FOR GRID OR MAP --- */}
+                        {viewMode === 'grid' ? (
+                            <>
+                                {filteredListings.length > 0 ? (
+                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                                        {filteredListings.map((item) => (
+                                            <ListingCard key={item.id} {...item} />
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-20 text-gray-500">
+                                        <p>No items found matching your criteria.</p>
+                                    </div>
+                                )}
+
+                                {filteredListings.length > 0 && (
+                                        <div className="mt-12 flex justify-center">
+                                            <button className="px-6 py-3 bg-white text-sm text-[#EB3B18] font-bold cursor-pointer rounded-lg hover:bg-[#EB3B18] hover:text-white transition-all shadow-sm" aria-label="Load more listings">Load More</button>
+                                        </div>
+                                )}
+                            </>
+                        ) : (
+                            // Render Map with filtered listings
+                            <ListingsMap listings={filteredListings} />
+                        )}
                     </div>
                 </div>
-                <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-full bg-[#002147] flex items-center justify-center shrink-0">
-                         <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                    </div>
-                    <div>
-                        <h3 className="font-bold text-[#002147] mb-1">Easy Returns & Refunds</h3>
-                        <p className="text-sm text-gray-600">Hassle-free returns, refunds and exchanges on eligible items.</p>
-                    </div>
-                </div>
-                <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-full bg-[#002147] flex items-center justify-center shrink-0">
-                        <MapPin className="text-white w-6 h-6" />
-                    </div>
-                    <div>
-                        <h3 className="font-bold text-[#002147] mb-1">Localized Experience</h3>
-                        <p className="text-sm text-gray-600">Browse and sell items locally with location-based listings.</p>
-                    </div>
-                </div>
-            </div>
-       </div>
-
-       <Footer />
-    </div>
-  );
+            </main>
+            <FeatureIcons />
+            <Footer />
+        </div>
+    );
 }
