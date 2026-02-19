@@ -11,8 +11,16 @@ interface NavbarProps {
 
 export const Navbar = ({ onOpenSidebar }: NavbarProps) => {
     const [isScrolled, setIsScrolled] = useState(false);
+    const [isAuth, setIsAuth] = useState(false);
+    
+    useEffect(() => {
+        const checkAuth = async () => {
+            const token = await fetch("/api/auth/me")
+            setIsAuth(!!token);
+        };
+        checkAuth();
+    }, []);
 
-    // Track scroll position to toggle navbar style
     useEffect(() => {
         const handleScroll = () => {
             if (window.scrollY > 50) {
@@ -55,7 +63,18 @@ export const Navbar = ({ onOpenSidebar }: NavbarProps) => {
                     <Link href="#" className="hover:text-[#EB3B18] transition-colors">Blog</Link>
                 </div>
                 
-                <div className="hidden md:flex gap-3">
+                                
+                {
+                    isAuth ? (
+                        <div className="hidden md:flex gap-3">
+                            <Link 
+                                href="/" 
+                                className="px-5 py-2 bg-[#EB3B18] rounded-md font-bold hover:bg-[#bf360c] transition-colors shadow-sm" 
+                            >
+                                Dashboard
+                            </Link>
+                        </div>
+                ):(<div className="hidden md:flex gap-3">
                     <Link 
                         href="/auth/login" 
                         className="px-4 py-2 hover:text-gray-200 transition-colors"
@@ -69,6 +88,10 @@ export const Navbar = ({ onOpenSidebar }: NavbarProps) => {
                         Sign Up
                     </Link>
                 </div>
+
+                )      
+                }
+                
             </div>
         </nav>
     );

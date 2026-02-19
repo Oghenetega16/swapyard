@@ -53,7 +53,7 @@ export default function SignupPage() {
                     phoneNumber: form.phoneNumber,
                     state: form.state,
                     role: role.toUpperCase(),
-                    contract: contract, // optional boolean
+                    contract: contract, 
                 }),
             });
 
@@ -64,8 +64,8 @@ export default function SignupPage() {
                 return;
             }
 
-            // Redirect to signin after success
-            window.location.href = "/signin";
+            
+            window.location.href = "/auth/login";
 
         } catch {
             setError("Network error");
