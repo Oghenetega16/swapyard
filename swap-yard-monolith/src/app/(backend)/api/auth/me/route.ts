@@ -1,30 +1,36 @@
-import {cookies} from "next/headers";
+import { cookies } from "next/headers";
 import { verifyToken } from "@/lib/token";
-import {prisma} from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
+export async function GET() {
+  try {
+    const token = (await cookies()).get("session")?.value;
+    if (!token) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
-export async function GET(){
-    try {
-        const token = (await cookies()).get("session")?.value;  
-        if (!token) {
-            return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-        }
+    const userId = await verifyToken(token);
+    if (!userId) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
-        const payload = await verifyToken(token);
-        
-        if (!payload) {
-            return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-        }
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        firstname: true,
+        lastname: true,
+        phoneNumber: true,
+        role: true,
+        state: true,
+        contract: true,
+        emailVerified: true
+      }
+    });
 
-        const user = await prisma.user.findUnique({
-            where: { id: payload },
-            select: { id: true, email: true, firstname: true, lastname: true, phoneNumber: true, role: true, state: true, contract: true }
-        }); 
+    if (!user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
-        return NextResponse.json({ user }, { status: 200 });
-    } catch (error) {
-        console.error("Error fetching user data:", error);
-        return NextResponse.json({ message: "Internal server error" }, { status: 500 });
-    }  
-} 
+    return NextResponse.json({ user }, { status: 200 });
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
+  }
+}

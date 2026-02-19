@@ -33,7 +33,6 @@ export async function POST(req:Request){
                 firstname,
                 lastname,
                 phoneNumber,
-                role,
                 state,
                 contract
             },

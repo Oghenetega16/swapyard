@@ -1,22 +1,27 @@
-import {SignJWT, jwtVerify} from "jose";
+import bcrypt from "bcryptjs"
+import { SignJWT, jwtVerify } from "jose"
 
+const secret = new TextEncoder().encode(process.env.JWT_SECRET!)
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+export async function hashPassword(password: string) {
+  return bcrypt.hash(password, 10)
+}
+
+export async function comparePassword(
+  password: string,
+  hashed: string
+) {
+  return bcrypt.compare(password, hashed)
+}
 
 export async function createToken(userId: string) {
-    return await new SignJWT({ userId })
-        .setProtectedHeader({ alg: "HS256" })
-        .setExpirationTime("7d")
-        .sign(secret);
-
+  return new SignJWT({ userId })
+    .setProtectedHeader({ alg: "HS256" })
+    .setExpirationTime("7d")
+    .sign(secret)
 }
 
 export async function verifyToken(token: string) {
-    try {
-        const { payload } = await jwtVerify(token, secret);
-        return payload.userId as string;
-    } catch (error) {
-        console.error("Token verification failed:", error);
-        return null;
-    }
+  const { payload } = await jwtVerify(token, secret)
+  return payload as { userId: string }
 }
