@@ -6,10 +6,18 @@ import { NextResponse } from "next/server";
 export async function GET() {
   try {
     const token = (await cookies()).get("session")?.value;
-    if (!token) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    if (!token) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
 
-    const userId = await verifyToken(token);
-    if (!userId) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    const payload = await verifyToken(token);
+
+    // payload could be string OR object depending on your verifyToken implementation
+    const userId = typeof payload === "string" ? payload : payload?.userId;
+
+    if (!userId) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -22,11 +30,12 @@ export async function GET() {
         role: true,
         state: true,
         contract: true,
-        emailVerified: true
-      }
+      },
     });
 
-    if (!user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    if (!user) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
 
     return NextResponse.json({ user }, { status: 200 });
   } catch (error) {
