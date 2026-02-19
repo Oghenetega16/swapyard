@@ -1,0 +1,42 @@
+datasource db {
+  provider = "mysql"
+  url = env("DATABASE_URL")
+}
+ 
+generator client {
+  provider = "prisma-client-js"
+}
+ 
+model User {
+  id            String          @id @default(cuid())
+  firstname          String?
+  lastname           String?
+  username      String?         @unique
+  email         String         @unique
+  password     String?
+  state        String?
+  role          Role            @default(BUYER)
+  phoneNumber  String?
+  emailVerified DateTime?
+  image         String?
+  contract   Boolean @default(false)
+ 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Role{
+  BUYER
+  SELLER
+}
+ 
+ 
+model VerificationToken {
+  id         Int      @id @default(autoincrement())
+  identifier String
+  token      String
+  expires    DateTime
+ 
+  @@unique([identifier, token])
+}
+ 

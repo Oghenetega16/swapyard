@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Facebook, Instagram } from "lucide-react";
-import { FaTelegramPlane, FaWhatsapp } from "react-icons/fa";
+import { FaTelegramPlane, FaWhatsapp} from "react-icons/fa";
 import Logo from "@/components/ui/Logo";
 
 export const Footer = () => {
