@@ -22,7 +22,7 @@ export const Navbar = ({ onOpenSidebar }: NavbarProps) => {
     const checkAuth = async () => {
       try {
         const res = await fetch("/api/auth/me", { method: "GET" });
-        setIsAuth(res.ok); // ✅ only true when 200
+        setIsAuth(res.ok);
       } catch {
         setIsAuth(false);
       } finally {

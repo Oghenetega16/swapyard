@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/Input";
 import Logo from "@/components/ui/Logo"; 
 import { Lock } from "lucide-react";
 
+
 export default function ForgotPasswordPage() {
     const ForgotIllustration = (
         <div className="space-y-6">
@@ -51,6 +52,12 @@ export default function ForgotPasswordPage() {
                         placeholder="Enter Email address/ Phone Number" 
                         type="text"
                         aria-label="Email or Phone Number"
+                    />
+                    <Input 
+                        label="New Password" 
+                        placeholder="Enter New Password" 
+                        type="password"
+                        aria-label="New Password"
                     />
                     <Button 
                         type="submit"
