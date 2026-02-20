@@ -1,13 +1,56 @@
 "use client";
-
+import { useState, useEffect } from "react";
 import AuthLayout from "@/components/layouts/AuthLayout";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import Logo from "@/components/ui/Logo"; 
 import { Lock } from "lucide-react";
+import { s } from "framer-motion/client";
+import { email } from "zod";
+
+
 
 
 export default function ForgotPasswordPage() {
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
+    const [successMessage, setSuccessMessage] = useState("");
+
+    const [form, setForm] = useState({
+        email: "",
+        password: "",
+    });
+
+    useEffect(() => {
+
+        setErrorMessage("");
+        setSuccessMessage("");
+    }, []);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        try {
+            const response = await fetch("/api/auth/resetpassword", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ email: form.email, password: form.password }),
+            });
+            const data = await response.json();
+            if (response.ok) {
+                setSuccessMessage(data.message);
+            } else {
+                setErrorMessage(`Error: ${data.message}`);
+            }
+        } catch (error) {
+            setErrorMessage("An unexpected error occurred. Please try again.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     const ForgotIllustration = (
         <div className="space-y-6">
             <h2 className="text-3xl font-bold text-gray-800 mb-6">Welcome Back!</h2>
@@ -46,27 +89,29 @@ export default function ForgotPasswordPage() {
                 </div>
                 <p className="text-center text-gray-600 mb-8 px-4">Enter your email address or phone number to get a security code</p>
 
-                <form className="w-full space-y-6">
+                <form className="w-full space-y-6" onSubmit={handleSubmit}>
                     <Input 
                         label="Email address" 
                         placeholder="Enter Email address/ Phone Number" 
                         type="text"
                         aria-label="Email or Phone Number"
+                        onChange={(e) => setForm({...form, email: e.target.value})}
                     />
                     <Input 
                         label="New Password" 
                         placeholder="Enter New Password" 
                         type="password"
                         aria-label="New Password"
+                        onChange={(e) => setForm({...form, password: e.target.value})}
                     />
                     <Button 
                         type="submit"
                         variant="primary"
                         fullWidth 
                         className="font-bold" 
-                        aria-label="Request Password Reset"
+                        aria-label="Reset Password"
                     >
-                        Request Password Reset
+                        Reset Password
                     </Button>
                 </form>
 
