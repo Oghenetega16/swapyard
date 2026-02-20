@@ -7,6 +7,7 @@ import Logo from "@/components/ui/Logo";
 import { Lock } from "lucide-react";
 import { s } from "framer-motion/client";
 import { email } from "zod";
+import { error } from "console";
 
 
 
@@ -21,14 +22,16 @@ export default function ForgotPasswordPage() {
         password: "",
     });
 
-    useEffect(() => {
+        const handleChange = (field: string, value: string) => {
+        setForm(prev => ({ ...prev, [field]: value }));
+    };
 
-        setErrorMessage("");
-        setSuccessMessage("");
-    }, []);
+ 
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+         setErrorMessage("");
+        setSuccessMessage("");
         setIsSubmitting(true);
         try {
             const response = await fetch("/api/auth/resetpassword", {
@@ -44,6 +47,8 @@ export default function ForgotPasswordPage() {
             } else {
                 setErrorMessage(`Error: ${data.message}`);
             }
+
+            window.location.href = "/auth/login";
         } catch (error) {
             setErrorMessage("An unexpected error occurred. Please try again.");
         } finally {
@@ -95,14 +100,14 @@ export default function ForgotPasswordPage() {
                         placeholder="Enter Email address/ Phone Number" 
                         type="text"
                         aria-label="Email or Phone Number"
-                        onChange={(e) => setForm({...form, email: e.target.value})}
+                        onChange={(e) => handleChange("email", e.target.value)}
                     />
                     <Input 
                         label="New Password" 
                         placeholder="Enter New Password" 
                         type="password"
                         aria-label="New Password"
-                        onChange={(e) => setForm({...form, password: e.target.value})}
+                        onChange={(e) => handleChange("password", e.target.value)}
                     />
                     <Button 
                         type="submit"
@@ -111,8 +116,10 @@ export default function ForgotPasswordPage() {
                         className="font-bold" 
                         aria-label="Reset Password"
                     >
-                        Reset Password
+                        {isSubmitting ? "Resetting..." : "Reset Password"}
                     </Button>
+                    {errorMessage && <p className="text-red-500 text-sm mt-2">{errorMessage}</p>   }
+                    {successMessage && <p className="text-green-500 text-sm mt-2">{successMessage}</p>}
                 </form>
 
                 <div className="md:hidden fixed bottom-0 left-0 right-0 bg-[#F0F4F8] px-6 py-6 text-center z-10">
