@@ -13,7 +13,6 @@ export default function ForgotPasswordPage() {
     const [errorMessage, setErrorMessage] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
     
-    // Step 1:
     const [step, setStep] = useState<"request" | "reset">("request");
 
     const [form, setForm] = useState({
@@ -32,7 +31,7 @@ export default function ForgotPasswordPage() {
         setIsSubmitting(true);
 
         try {
-            const response = await fetch("/api/auth/forgot-password", {
+            const response = await fetch("/api/auth/token", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: form.email }),
@@ -59,7 +58,7 @@ export default function ForgotPasswordPage() {
         setIsSubmitting(true);
 
         try {
-            const response = await fetch("/api/auth/reset-password", {
+            const response = await fetch("/api/auth/resetpassword", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ token: form.token, password: form.password }),
