@@ -12,7 +12,6 @@ export async function GET() {
 
     const payload = await verifyToken(token);
 
-    // payload could be string OR object depending on your verifyToken implementation
     const userId = typeof payload === "string" ? payload : payload?.userId;
 
     if (!userId) {
