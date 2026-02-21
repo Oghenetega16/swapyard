@@ -20,6 +20,11 @@ model User {
   emailVerified DateTime?
   image         String?
   contract   Boolean @default(false)
+
+  listings Listing[]
+  receivedReviews Review[] @relation("SellerReviews")
+  givenReviews Review[]   @relation("BuyerReviews")
+  
  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -50,3 +55,54 @@ model PasswordResetToken{
 
   @@unique([email, token])
 }
+
+model Listing{
+  id String @id @default(cuid())
+  name String
+  price Float
+  images String
+  description String
+  location String?
+  state String?
+  status  ProductStatus @default(AVAILABLE)
+  condition ProductCondition 
+  negotiable Boolean @default(false)
+
+  sellerId String
+  Seller User @relation(fields: [sellerId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum ProductStatus{
+  SOLD
+  AVAILABLE
+}
+
+enum ProductCondition{
+  NEW
+  FAIRLYNEW
+  SECONDHAND
+  FAIR
+  GOOD
+}
+
+model Review{
+  id String @id @default(cuid())
+
+  rating Int
+  comment String?
+  buyerId String
+  buyer User @relation("BuyerReviews", fields: [buyerId], references: [id])
+
+  sellerId String
+  seller User @relation("SellerReviews", fields: [sellerId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([buyerId, sellerId])
+
+}
+
+
