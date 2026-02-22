@@ -12,6 +12,7 @@ export default function LoginPage() {
   const [emailOrPhone, setEmailOrPhone] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  
 
   const GoogleIcon = () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -56,7 +57,6 @@ const AppleIcon = () => (
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // If your backend expects "email", keep it as email.
         body: JSON.stringify({ email: emailOrPhone.trim(), password }),
       });
 
