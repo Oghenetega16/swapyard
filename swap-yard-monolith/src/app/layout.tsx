@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import "./globals.css";
 
 // Initialize the Manrope font
@@ -7,6 +8,7 @@ const manrope = Manrope({
     subsets: ["latin"],
     display: "swap",
 });
+
 
 export const metadata: Metadata = {
     title: "SwapYard",
@@ -21,7 +23,9 @@ export default function RootLayout({
     return (
         <html lang="en">
             <body className={manrope.className} suppressHydrationWarning>
+                <GoogleOAuthProvider clientId={process.env.GOOGLE_CLIENT_ID!}>
                 {children}
+                </GoogleOAuthProvider>
             </body>
         </html>
     );

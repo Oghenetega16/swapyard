@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@prisma/client": "6.19.2",
+    "@react-oauth/google": "^0.13.4",
     "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
     "cookie": "^1.1.1",

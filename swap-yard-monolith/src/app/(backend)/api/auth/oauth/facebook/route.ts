@@ -28,7 +28,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Invalid Facebook token" }, { status: 401 });
     }
 
-    // 2) Fetch user email
     const meUrl =
       `https://graph.facebook.com/me` +
       `?fields=id,name,email` +
