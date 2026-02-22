@@ -110,7 +110,7 @@ const AppleIcon = () => (
           )}
 
           {success && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{success}    </div>
+            <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">{success}    </div>
           )}
 
           <button
@@ -127,10 +127,11 @@ const AppleIcon = () => (
               "Login"
             )}
           </button>
-          <p className="mt-5 mb-10 text-center text-gray-600 text-sm">Or Signin Using</p>
+          <p className="mt-5 mb-10 text-center text-gray-600 text-sm">Or</p>
 
           <div className="flex mx-auto items-center justify-center space-x-5">
-          <GoogleButton/>
+          <GoogleButton onSuccessMessage={(msg:any) => setSuccess(msg)} 
+                        onErrorMessage={(msg:any) => setError(msg)}/>
           <AppleIcon />
             </div>
 
