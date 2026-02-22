@@ -43,3 +43,15 @@ next-env.d.ts
 /prisma/src/generated/prisma
 
 /prisma/src/generated/prisma
+
+# dependencies
+frontend/node_modules/
+
+# Next.js build output
+frontend/.next/
+
+# sensitive environment variables
+frontend/.env
+
+# Auto-generated TypeScript types
+frontend/next-env.d.ts
