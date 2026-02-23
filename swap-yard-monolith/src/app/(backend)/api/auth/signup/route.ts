@@ -32,6 +32,7 @@ export async function POST(req:Request){
                 password: hashedPassword,
                 firstname,
                 lastname,
+                role,
                 phoneNumber,
                 state,
                 contract
