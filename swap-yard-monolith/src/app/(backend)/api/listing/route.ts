@@ -14,7 +14,7 @@ export async function getCookie(req:Request, name: string){
 
 export async function POST(req: Request) {
   try {
-    const token = await getCookie(req, "auth_token");
+    const token = await getCookie(req, "session");
     if (!token) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
@@ -76,17 +76,17 @@ export async function POST(req: Request) {
         negotiable,
         sellerId: user.id,
         images: {
-          create: uploaded.map((img) => ({
-            url: img.url,
-            publicId: img.public_id,
-          })),
-        },
+  create: uploaded.map((img) => ({
+    url: img.url,
+  })),
+},
       },
       include: { images: true },
     });
 
     return NextResponse.json({ ok: true, listing }, { status: 201 });
-  } catch {
+  } catch(err) {
+    console.error(err);
     return NextResponse.json({ message: "Server error" }, { status: 500 });
   }
 }
