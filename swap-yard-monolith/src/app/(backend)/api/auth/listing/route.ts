@@ -1,22 +1,31 @@
 import { NextResponse } from "next/server";
 import { uploadManyImageFiles } from "@/app/(backend)/utils/cloudinary";
+import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs"
 
 export async function POST(req:Request){
 
-    const formData = await req.formData()
+    const {name, price, description, location, state, status, condition, negotiable} = await req.json()
 
-    const title = String(formData.get("name") || "")
-
+if (!name){
+        return NextResponse.json({message: "Missing name"}, {status: 400})
+    }
+    
     const images = formData.getAll("images").filter(Boolean) as File[];
+
+    
 
     const uploaded = images.length ? await uploadManyImageFiles(
         images, {subfolder: "listings"}
     ):[];
 
-    const imageUrls = uploaded.map((u)=> u.url)
-    const imagePublicIds = uploaded.map((u)=> u.public_id)
+    const newListing = await prisma.listing.create({
+        data:{
+            name,
+            price,
 
+        }
+    })
 
 }
