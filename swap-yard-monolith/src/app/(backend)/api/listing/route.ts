@@ -90,3 +90,63 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: "Server error" }, { status: 500 });
   }
 }
+
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+
+    const q = searchParams.get("q")?.trim() || "";
+    const status = searchParams.get("status")?.trim() || "";
+    const condition = searchParams.get("condition")?.trim() || "";
+    const state = searchParams.get("state")?.trim() || "";
+    const sellerId = searchParams.get("sellerId")?.trim() || "";
+
+    const minPriceRaw = searchParams.get("minPrice");
+    const maxPriceRaw = searchParams.get("maxPrice");
+    const minPrice = minPriceRaw ? Number(minPriceRaw) : null;
+    const maxPrice = maxPriceRaw ? Number(maxPriceRaw) : null;
+
+    const pageRaw = searchParams.get("page");
+    const limitRaw = searchParams.get("limit");
+    const page = pageRaw ? Math.max(1, Number(pageRaw)) : 1;
+    const limit = limitRaw ? Math.min(50, Math.max(1, Number(limitRaw))) : 12;
+    const skip = (page - 1) * limit;
+
+    const where: any = {};
+
+    if (status) where.status = status;
+    if (condition) where.condition = condition;
+    if (state) where.state = state;
+    if (sellerId) where.sellerId = sellerId;
+
+    if (q) {
+      where.OR = [
+        { name: { contains: q, mode: "insensitive" } },
+        { description: { contains: q, mode: "insensitive" } },
+        { location: { contains: q, mode: "insensitive" } },
+      ];
+    }
+
+    if (minPrice !== null && !Number.isNaN(minPrice)) where.price = { ...(where.price || {}), gte: minPrice };
+    if (maxPrice !== null && !Number.isNaN(maxPrice)) where.price = { ...(where.price || {}), lte: maxPrice };
+
+    const [items, total] = await Promise.all([
+      prisma.listing.findMany({
+        where,
+        include: { images: true, seller: { select: { id: true } } },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+      }),
+      prisma.listing.count({ where }),
+    ]);
+
+    return NextResponse.json(
+      { ok: true, items, meta: { total, page, limit, pages: Math.ceil(total / limit) } },
+      { status: 200 }
+    );
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ message: "Server error" }, { status: 500 });
+  }
+}
