@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import { uploadManyImageFiles, deleteManyByPublicIds } from "@/app/(backend)/utils/cloudinary";
+import {
+  uploadManyImageFiles,
+  deleteManyByPublicIds,
+} from "@/app/(backend)/utils/cloudinary";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/token";
 
@@ -8,13 +11,23 @@ export const runtime = "nodejs";
 export async function getCookie(req: Request, name: string) {
   const cookie = req.headers.get("cookie");
   if (!cookie) return null;
-  return cookie.split("; ").find((c) => c.startsWith(`${name}=`))?.split("=")[1] ?? null;
+  return (
+    cookie
+      .split("; ")
+      .find((c) => c.startsWith(`${name}=`))
+      ?.split("=")[1] ?? null
+  );
 }
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(
+  req: Request,
+  ctx: { params: Promise<{ id: string }> }
+) {
   try {
+    const { id } = await ctx.params;
+
     const listing = await prisma.listing.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: { images: true, seller: { select: { id: true } } },
     });
 
@@ -29,8 +42,13 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(
+  req: Request,
+  ctx: { params: Promise<{ id: string }> }
+) {
   try {
+    const { id } = await ctx.params;
+
     const token = await getCookie(req, "session");
     if (!token) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -55,7 +73,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     }
 
     const existing = await prisma.listing.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: { images: true },
     });
 
@@ -111,7 +129,10 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     const images = formData.getAll("images").filter(Boolean) as File[];
 
     if (images.length) {
-      const oldPublicIds = existing.images.map((i) => i.publicId).filter(Boolean) as string[];
+      const oldPublicIds = existing.images
+        .map((i) => i.publicId)
+        .filter(Boolean) as string[];
+
       if (oldPublicIds.length) await deleteManyByPublicIds(oldPublicIds);
 
       await prisma.image.deleteMany({ where: { listingId: existing.id } });
@@ -127,7 +148,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     }
 
     const listing = await prisma.listing.update({
-      where: { id: params.id },
+      where: { id },
       data,
       include: { images: true },
     });
@@ -139,48 +160,46 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(
+  req: Request,
+  ctx: { params: Promise<{ id: string }> }
+) {
   try {
+    const { id } = await ctx.params;
+
     const token = await getCookie(req, "session");
-    if (!token) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+    if (!token) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
     const { userId } = await verifyToken(token);
-    if (!userId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+    if (!userId) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { id: true, role: true },
     });
 
-    if (!user) {
-      return NextResponse.json({ message: "User does not exist" }, { status: 404 });
-    }
-
+    if (!user) return NextResponse.json({ message: "User does not exist" }, { status: 404 });
     if (user.role !== "SELLER") {
       return NextResponse.json({ message: "User is not authorized" }, { status: 403 });
     }
 
     const existing = await prisma.listing.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: { images: true },
     });
 
-    if (!existing) {
-      return NextResponse.json({ message: "Listing not found" }, { status: 404 });
-    }
-
+    if (!existing) return NextResponse.json({ message: "Listing not found" }, { status: 404 });
     if (existing.sellerId !== user.id) {
       return NextResponse.json({ message: "Forbidden" }, { status: 403 });
     }
 
-    const publicIds = existing.images.map((i) => i.publicId).filter(Boolean) as string[];
+    const publicIds = existing.images
+      .map((i) => i.publicId)
+      .filter(Boolean) as string[];
+
     if (publicIds.length) await deleteManyByPublicIds(publicIds);
 
-    await prisma.listing.delete({ where: { id: existing.id } });
+    await prisma.listing.delete({ where: { id } });
 
     return NextResponse.json({ ok: true }, { status: 200 });
   } catch (err) {
