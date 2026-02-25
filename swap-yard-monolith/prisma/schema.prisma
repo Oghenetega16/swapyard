@@ -75,11 +75,12 @@ model Listing{
   updatedAt DateTime @updatedAt
 }
 
-model Image{
-  id String @id @default(cuid())
-  url String
+model Image {
+  id        String  @id @default(cuid())
+  url       String
+  publicId  String?
   listingId String
-  listing Listing @relation(fields: [listingId], references: [id])
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
 }
 
 enum ProductStatus{
