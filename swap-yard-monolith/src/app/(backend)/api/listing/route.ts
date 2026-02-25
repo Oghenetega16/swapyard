@@ -78,6 +78,7 @@ export async function POST(req: Request) {
         images: {
   create: uploaded.map((img) => ({
     url: img.url,
+    publicId: img.public_id,
   })),
 },
       },
