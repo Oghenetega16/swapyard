@@ -109,6 +109,7 @@ export default function TestReviews() {
 
               <button
                 type="button"
+                // This ensures only when reviewId is available or button is not loading, then update can be clicked
                 disabled={loading || !reviewId}
                 onClick={() =>
                   request("PUT", `${base}/${reviewId}`, {
