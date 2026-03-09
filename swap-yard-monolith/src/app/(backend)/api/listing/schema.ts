@@ -7,18 +7,16 @@ export const createListingSchema = z.object({
   state: z.string().trim().nullable().optional(),
 
   status: z.enum(["AVAILABLE", "SOLD"]).default("AVAILABLE"),
-  condition: z.enum(["NEW", "USED"]),
+  condition: z.enum(["NEW", "FAIRLYNEW", "SECONDHAND", "FAIR", "GOOD"]),
 
   price: z.number().positive("Price must be greater than 0"),
   negotiable: z.boolean().default(false),
 });
 
-
-
 export const getListingsSchema = z.object({
   q: z.string().trim().optional().default(""),
   status: z.enum(["AVAILABLE", "SOLD"]).optional(),
-  condition: z.enum(["NEW", "USED"]).optional(),
+  condition: z.enum(["NEW", "FAIRLYNEW", "SECONDHAND", "FAIR", "GOOD"]).optional(),
   state: z.string().trim().optional(),
   sellerId: z.string().trim().optional(),
 
