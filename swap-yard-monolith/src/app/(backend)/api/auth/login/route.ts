@@ -28,7 +28,6 @@ export async function POST(req: Request) {
     }
 
     // Optional: enforce email verification later
-    // if (!user.emailVerified) return NextResponse.json({ message: "Verify your email first" }, { status: 403 });
 
     const token = await createToken(user.id);
 
