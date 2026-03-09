@@ -16,7 +16,7 @@ export const registerSchema = z.object({
   role: z.enum(["BUYER", "SELLER"]).default("BUYER"),
 
   contract: z.boolean(),
-});
+}).strict();
 
 export const loginSchema = z.object({
     email: z.email().trim().min(5,"Email must be a valid email"),
