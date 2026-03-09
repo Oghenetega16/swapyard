@@ -10,7 +10,6 @@ const googleJWKs = createRemoteJWKSet(
 export async function POST(req:Request) {
 
     try{
-
         const {idToken} = await req.json()
 
         if(!idToken){

@@ -6,3 +6,11 @@ export const loginSchema = z.object({
 })
 
 export type loginInput = z.infer<typeof loginSchema>
+
+export const googleTokenSchema = z.object(
+{
+    token: z.string("Token is not a string, try logging in with email")
+}
+)
+
+export type tokenInput = z.infer<typeof googleTokenSchema>
