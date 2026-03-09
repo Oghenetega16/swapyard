@@ -1,44 +1,75 @@
 import { NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/token";
+import { createReviewSchema, getReviewsSchema } from "./schema";
 
 export const runtime = "nodejs";
 
 export async function getCookie(req: Request, name: string) {
   const cookie = req.headers.get("cookie");
   if (!cookie) return null;
-  return cookie.split("; ").find((c) => c.startsWith(`${name}=`))?.split("=")[1] ?? null;
+
+  return (
+    cookie
+      .split("; ")
+      .find((c) => c.startsWith(`${name}=`))
+      ?.split("=")[1] ?? null
+  );
 }
 
 export async function POST(req: Request) {
   try {
     const token = await getCookie(req, "session");
-    if (!token) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+
+    if (!token) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
 
     const { userId } = await verifyToken(token);
-    if (!userId) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+
+    if (!userId) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { id: true, role: true },
     });
 
-    if (!user) return NextResponse.json({ message: "User does not exist" }, { status: 404 });
+    if (!user) {
+      return NextResponse.json({ message: "User does not exist" }, { status: 404 });
+    }
+
     if (user.role !== "BUYER") {
       return NextResponse.json({ message: "User is not authorized" }, { status: 403 });
     }
 
     const body = await req.json();
-    const rating = Number(body?.rating);
-    const comment = body?.comment ? String(body.comment).trim() : null;
-    const sellerId = String(body?.sellerId || "").trim();
 
-    if (!sellerId || Number.isNaN(rating) || rating < 1 || rating > 5) {
-      return NextResponse.json({ message: "Invalid parameters" }, { status: 400 });
+    const validatedInput = createReviewSchema.safeParse({
+      rating: body?.rating,
+      comment: body?.comment ? String(body.comment).trim() : null,
+      sellerId: String(body?.sellerId || "").trim(),
+    });
+
+    if (!validatedInput.success) {
+      return NextResponse.json(
+        {
+          message: "Input does not meet required schema",
+          errors: validatedInput.error.flatten(),
+        },
+        { status: 400 }
+      );
     }
 
+    const { rating, comment, sellerId } = validatedInput.data;
+
     if (sellerId === user.id) {
-      return NextResponse.json({ message: "You cannot review yourself" }, { status: 400 });
+      return NextResponse.json(
+        { message: "You cannot review yourself" },
+        { status: 400 }
+      );
     }
 
     const seller = await prisma.user.findUnique({
@@ -46,9 +77,15 @@ export async function POST(req: Request) {
       select: { id: true, role: true },
     });
 
-    if (!seller) return NextResponse.json({ message: "Seller not found" }, { status: 404 });
+    if (!seller) {
+      return NextResponse.json({ message: "Seller not found" }, { status: 404 });
+    }
+
     if (seller.role !== "SELLER") {
-      return NextResponse.json({ message: "Target user is not a seller" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Target user is not a seller" },
+        { status: 400 }
+      );
     }
 
     const review = await prisma.review.create({
@@ -72,6 +109,7 @@ export async function POST(req: Request) {
         { status: 409 }
       );
     }
+
     console.error(err);
     return NextResponse.json({ message: "Server error" }, { status: 500 });
   }
@@ -81,16 +119,31 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
 
-    const sellerId = searchParams.get("sellerId")?.trim() || "";
-    const buyerId = searchParams.get("buyerId")?.trim() || "";
+    const rawQuery = {
+      sellerId: searchParams.get("sellerId") ?? undefined,
+      buyerId: searchParams.get("buyerId") ?? undefined,
+      page: searchParams.get("page") ?? undefined,
+      limit: searchParams.get("limit") ?? undefined,
+    };
 
-    const pageRaw = searchParams.get("page");
-    const limitRaw = searchParams.get("limit");
-    const page = pageRaw ? Math.max(1, Number(pageRaw)) : 1;
-    const limit = limitRaw ? Math.min(50, Math.max(1, Number(limitRaw))) : 12;
+    const validatedQuery = getReviewsSchema.safeParse(rawQuery);
+
+    if (!validatedQuery.success) {
+      return NextResponse.json(
+        {
+          message: "Invalid query parameters",
+          errors: validatedQuery.error.flatten(),
+        },
+        { status: 400 }
+      );
+    }
+
+    const { sellerId, buyerId, page, limit } = validatedQuery.data;
+
     const skip = (page - 1) * limit;
 
-    const where: any = {};
+    const where: Prisma.ReviewWhereInput = {};
+
     if (sellerId) where.sellerId = sellerId;
     if (buyerId) where.buyerId = buyerId;
 
@@ -98,7 +151,7 @@ export async function GET(req: Request) {
       prisma.review.findMany({
         where,
         include: {
-          buyer: { select: { id: true   } },
+          buyer: { select: { id: true } },
           seller: { select: { id: true } },
         },
         orderBy: { createdAt: "desc" },
@@ -109,7 +162,16 @@ export async function GET(req: Request) {
     ]);
 
     return NextResponse.json(
-      { ok: true, items, meta: { total, page, limit, pages: Math.ceil(total / limit) } },
+      {
+        ok: true,
+        items,
+        meta: {
+          total,
+          page,
+          limit,
+          pages: Math.ceil(total / limit),
+        },
+      },
       { status: 200 }
     );
   } catch (err) {
