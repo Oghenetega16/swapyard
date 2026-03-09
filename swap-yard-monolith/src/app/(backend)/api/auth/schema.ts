@@ -7,10 +7,10 @@ export const loginSchema = z.object({
 
 export type loginInput = z.infer<typeof loginSchema>
 
-export const googleTokenSchema = z.object(
-{
-    token: z.string("Token is not a string, try logging in with email")
-}
-)
+export const googleAuthSchema = z.object({
+  idToken: z.string().trim().min(1, "Google token is required"),
+});
 
-export type tokenInput = z.infer<typeof googleTokenSchema>
+export const googleClientIdSchema = z.object({
+  GOOGLE_CLIENT_ID: z.string().trim().min(5, "Invalid Google client ID"),
+});

@@ -2,29 +2,64 @@ import { NextResponse } from "next/server";
 import { createRemoteJWKSet, jwtVerify } from "jose";
 import { prisma } from "@/lib/prisma";
 import { createToken } from "@/lib/token";
+import { googleAuthSchema, googleClientIdSchema } from "../../schema";
 
 const googleJWKs = createRemoteJWKSet(
-    new URL("https://www.googleapis.com/oauth2/v3/certs")
-)
+  new URL("https://www.googleapis.com/oauth2/v3/certs")
+);
 
-export async function POST(req:Request) {
+export async function POST(req: Request) {
+  try {
+    const body = await req.json();
 
-    try{
-        const {idToken} = await req.json()
+    const validatedBody = googleAuthSchema.safeParse(body);
 
-        if(!idToken){
-            return NextResponse.json({message: "Missing Google idToken"}, {status: 400})
-        }
+    if (!validatedBody.success) {
+      return NextResponse.json(
+        {
+          message: "Google token does not meet schema requirements",
+          errors: validatedBody.error.flatten(),
+        },
+        { status: 400 }
+      );
+    }
 
-        const { payload } = await jwtVerify(idToken, googleJWKs, {
-            issuer: ["https://accounts.google.com", "accounts.google.com"],
-            audience: process.env.GOOGLE_CLIENT_ID,
-        })
+    const validatedEnv = googleClientIdSchema.safeParse({
+      GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+    });
 
-        const email = payload.email
+    if (!validatedEnv.success) {
+      console.error("Invalid GOOGLE_CLIENT_ID", validatedEnv.error.flatten());
+
+      return NextResponse.json(
+        { message: "Server configuration error" },
+        { status: 500 }
+      );
+    }
+
+    const { idToken } = validatedBody.data;
+    const { GOOGLE_CLIENT_ID } = validatedEnv.data;
+
+    const { payload } = await jwtVerify(idToken, googleJWKs, {
+      issuer: ["https://accounts.google.com", "accounts.google.com"],
+      audience: GOOGLE_CLIENT_ID,
+    });
+
+    const email = payload.email;
+    const emailVerified = payload.email_verified;
 
     if (typeof email !== "string") {
-      return NextResponse.json({ message: "Google did not return an email" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Google did not return an email" },
+        { status: 400 }
+      );
+    }
+
+    if (emailVerified !== true) {
+      return NextResponse.json(
+        { message: "Google email is not verified" },
+        { status: 401 }
+      );
     }
 
     const user = await prisma.user.findUnique({
@@ -50,7 +85,11 @@ export async function POST(req:Request) {
 
     const sessionToken = await createToken(user.id);
 
-    const res = NextResponse.json({ message: "Login successful", user }, { status: 200 });
+    const res = NextResponse.json(
+      { message: "Login successful", user },
+      { status: 200 }
+    );
+
     res.cookies.set("session", sessionToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -62,6 +101,10 @@ export async function POST(req:Request) {
     return res;
   } catch (err) {
     console.error("Google OAuth login error:", err);
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
+
+    return NextResponse.json(
+      { message: "Invalid or expired Google token" },
+      { status: 401 }
+    );
   }
 }
