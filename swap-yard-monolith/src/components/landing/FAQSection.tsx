@@ -27,25 +27,25 @@ const FAQItem = ({ question, answer }: { question: string, answer: string }) => 
 
     return (
         <div 
-        className={`rounded-xl transition-all duration-300 overflow-hidden ${
+        className={`rounded-xl transition-all duration-300 overflow-hidden w-full ${
             isOpen ? "bg-gray-50 ring-1 ring-gray-200" : "bg-[#F3F4F6] hover:bg-gray-200"
         }`}
         >
             <button 
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-full flex justify-between items-center px-4 py-3 text-left focus:outline-none"
+                className="w-full flex justify-between items-center px-5 py-4 min-h-20 text-left focus:outline-none cursor-pointer"
                 aria-expanded={isOpen ? 'true' : 'false'}
             >
                 <span 
-                    className={`font-bold text-base transition-colors duration-300 ${
+                    className={`font-bold text-[15px] md:text-base flex-1 pr-4 transition-colors duration-300 ${
                         isOpen ? "text-[#EB3B18]" : "text-gray-800"
                     }`}
                 >
                     {question}
                 </span>
-                <span className="ml-4 shrink-0">
+                <span className="shrink-0">
                     <Plus 
-                        className={`transition-all duration-300 cursor-pointer transform ${
+                        className={`transition-all duration-300 transform ${
                         isOpen ? "rotate-45 text-[#EB3B18]" : "rotate-0 text-gray-800"
                         }`} 
                         size={20} 
@@ -60,7 +60,7 @@ const FAQItem = ({ question, answer }: { question: string, answer: string }) => 
                 }`}
             >
                 <div className="overflow-hidden">
-                    <div className="px-4 pb-6 text-gray-600 text-sm leading-relaxed">
+                    <div className="px-5 pb-6 text-gray-600 text-sm md:text-base leading-relaxed">
                         {answer}
                     </div>
                 </div>
@@ -70,17 +70,33 @@ const FAQItem = ({ question, answer }: { question: string, answer: string }) => 
 };
 
 export const FAQSection = () => {
+    const midPoint = Math.ceil(faqData.length / 2);
+    const leftColumnData = faqData.slice(0, midPoint);
+    const rightColumnData = faqData.slice(midPoint);
+
     return (
-        <section className="py-20 bg-white" aria-labelledby="faq-heading">
-            <div className="container mx-auto px-4">
-                <h2 id="faq-heading" className="text-2xl font-bold text-center mb-12 text-[#002147]">
+        <section className="py-10 md:py-16 bg-white" aria-labelledby="faq-heading">
+            <div className="container mx-auto px-6 md:px-10 lg:px-12 xl:px-4 max-w-7xl">
+                <h2 id="faq-heading" className="text-2xl md:text-3xl font-bold text-center mb-8 text-[#002147]">
                     You&apos;ve Got Questions & We&apos;ve Got Answers!
                 </h2>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto items-start">
-                    {faqData.map((item, index) => (
-                        <FAQItem key={index} question={item.question} answer={item.answer} />
-                    ))}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 max-w-5xl mx-auto items-start">
+                    
+                    {/* Left Column */}
+                    <div className="flex flex-col gap-4 md:gap-6">
+                        {leftColumnData.map((item, index) => (
+                            <FAQItem key={`left-${index}`} question={item.question} answer={item.answer} />
+                        ))}
+                    </div>
+
+                    {/* Right Column */}
+                    <div className="flex flex-col gap-4 md:gap-6">
+                        {rightColumnData.map((item, index) => (
+                            <FAQItem key={`right-${index}`} question={item.question} answer={item.answer} />
+                        ))}
+                    </div>
+
                 </div>
             </div>
         </section>

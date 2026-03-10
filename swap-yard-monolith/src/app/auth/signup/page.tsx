@@ -143,10 +143,11 @@ export default function SignupPage() {
 
                     {/* State */}
                     <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-gray-700">
+                        <label htmlFor="Select state" className="text-sm font-medium text-gray-700">
                             State
                         </label>
                         <select
+                            id="Select state"
                             value={form.state}
                             onChange={(e) => handleChange("state", e.target.value)}
                             className="w-full rounded-lg border border-gray-300 px-3 py-3 text-sm"
@@ -194,6 +195,7 @@ export default function SignupPage() {
                     <div className="flex items-start gap-2 pt-2">
                         <input
                             type="checkbox"
+                            aria-label="checkbox"
                             checked={contract}
                             onChange={(e) => setContract(e.target.checked)}
                             className="mt-1 w-4 h-4 accent-[#EB3B18]"

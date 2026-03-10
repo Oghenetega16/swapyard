@@ -149,7 +149,7 @@ export const Categories = () => {
 
     return (
         <section className="py-16 bg-[#F9FAFB]" aria-labelledby="categories-heading">
-            <div className="container mx-auto px-4">
+            <div className="container mx-auto px-6 md:px-10 lg:px-12 xl:px-4 max-w-7xl">
                 
                 {/* Header Container with Title (Left) and Arrows (Right) */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
