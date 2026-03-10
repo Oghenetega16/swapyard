@@ -4,6 +4,7 @@ import { uploadManyImageFiles } from "@/app/(backend)/utils/cloudinary";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/token";
 import { createListingSchema, getListingsSchema } from "./schema";
+import { redisClient } from "@/lib/redis";
 
 export const runtime = "nodejs";
 
@@ -156,6 +157,26 @@ export async function GET(req: Request) {
       limit,
     } = validatedQuery.data;
 
+    //Use Redis
+
+    const cacheKey = `listings: ${JSON.stringify({
+      q,
+      status,
+      condition,
+      state,
+      sellerId,
+      minPrice,
+      maxPrice,
+      page,
+      limit,
+    })}`
+
+    const cached = await redisClient.get(cacheKey)
+
+    if (cached) {
+      return NextResponse.json(JSON.parse(cached), {status:200})
+    }
+
     const skip = (page - 1) * limit;
 
     const where: Prisma.ListingWhereInput = {};
@@ -196,8 +217,7 @@ export async function GET(req: Request) {
       prisma.listing.count({ where }),
     ]);
 
-    return NextResponse.json(
-      {
+    const responseData = {
         ok: true,
         items,
         meta: {
@@ -205,10 +225,14 @@ export async function GET(req: Request) {
           page,
           limit,
           pages: Math.ceil(total / limit),
-        },
-      },
-      { status: 200 }
-    );
+        }
+      };
+
+      await redisClient.set(cacheKey, JSON.stringify(responseData), {
+        EX: 360
+      })
+
+    return NextResponse.json(responseData, { status: 200 });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ message: "Server error" }, { status: 500 });
