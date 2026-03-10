@@ -11,6 +11,8 @@ export const runtime = "nodejs";
 //Intitialize Redis
 const redisClient = createClient()
 
+const default_expiration = 3600;
+
 export async function getCookie(req: Request, name: string) {
   const cookie = req.headers.get("cookie");
   if (!cookie) return null;
@@ -200,6 +202,8 @@ export async function GET(req: Request) {
       prisma.listing.count({ where }),
     ]);
 
+    redisClient.setEx("items", default_expiration, JSON.stringify(items))
+    
     return NextResponse.json(
       {
         ok: true,
@@ -213,6 +217,8 @@ export async function GET(req: Request) {
       },
       { status: 200 }
     );
+
+
   } catch (err) {
     console.error(err);
     return NextResponse.json({ message: "Server error" }, { status: 500 });
