@@ -4,8 +4,12 @@ import { uploadManyImageFiles } from "@/app/(backend)/utils/cloudinary";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/token";
 import { createListingSchema, getListingsSchema } from "./schema";
+import { createClient } from "redis";
 
 export const runtime = "nodejs";
+
+//Intitialize Redis
+const redisClient = createClient()
 
 export async function getCookie(req: Request, name: string) {
   const cookie = req.headers.get("cookie");
