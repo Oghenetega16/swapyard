@@ -9,4 +9,7 @@ redisClient.on("error", (err) => {
 }
 )
 
-await redisClient.connect()
+if(!redisClient.isOpen){
+    await redisClient.connect()
+}
+
