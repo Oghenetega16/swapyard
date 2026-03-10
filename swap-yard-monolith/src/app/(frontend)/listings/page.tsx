@@ -1,18 +1,15 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Navbar } from "@/components/layouts/Navbar"; 
 import { Footer } from "@/components/landing/Footer"; 
 import { FilterSidebar } from "@/components/listings/filters/FilterSidebar";
 import { ListingCard } from "@/components/listings/ListingCard";
 import { ListingsMap } from "@/components/listings/ListingMap"; 
-import { Sidebar } from "@/components/layouts/Sidebar";
 import { FeatureIcons } from "@/components/layouts/FeatureIcons";
 import { Search, Map, X, SlidersHorizontal, ChevronDown, Grid } from "lucide-react";
-import { MOCK_LISTINGS } from "@/lib/mockListings"; // Import shared data
+import { MOCK_LISTINGS } from "@/lib/mockListings"; 
 
 export default function ListingsPage() {
-    const [isSidebarOpen, setSidebarOpen] = useState(false);
     const [isMobileFilterOpen, setMobileFilterOpen] = useState(false);
     const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid'); 
 
@@ -92,7 +89,7 @@ export default function ListingsPage() {
 
     // --- FILTERING LOGIC ---
     const filteredListings = useMemo(() => {
-        let result = [...MOCK_LISTINGS]; // Using imported data
+        let result = [...MOCK_LISTINGS];
 
         if (searchQuery) {
             const lowerQuery = searchQuery.toLowerCase();
@@ -124,26 +121,22 @@ export default function ListingsPage() {
             const priceA = parseInt(a.price.replace(/[^0-9]/g, ''));
             const priceB = parseInt(b.price.replace(/[^0-9]/g, ''));
 
-        switch (sortBy) {
-            case "Price: Low to High": return priceA - priceB;
-            case "Price: High to Low": return priceB - priceA;
-            case "A-Z": return a.title.localeCompare(b.title);
-            case "Oldest": return parseInt(a.id) - parseInt(b.id);
-            case "Newest": default: return parseInt(b.id) - parseInt(a.id);
-        }
-    });
+            switch (sortBy) {
+                case "Price: Low to High": return priceA - priceB;
+                case "Price: High to Low": return priceB - priceA;
+                case "A-Z": return a.title.localeCompare(b.title);
+                case "Oldest": return parseInt(a.id) - parseInt(b.id);
+                case "Newest": default: return parseInt(b.id) - parseInt(a.id);
+            }
+        });
 
-    return result;
-}, [searchQuery, sortBy, selectedCategories, selectedConditions, priceRange, location, isVerified, selectedDelivery]);
+        return result;
+    }, [searchQuery, sortBy, selectedCategories, selectedConditions, priceRange, location, isVerified, selectedDelivery]);
 
     return (
-        <div className="min-h-screen bg-[#F9FAFB] font-sans text-gray-900">
-            <Sidebar isOpen={isSidebarOpen} onClose={() => setSidebarOpen(false)} />
-            <Navbar onOpenSidebar={() => setSidebarOpen(true)} />
-
-            <div className="bg-[#002147] pt-10 pb-12 px-4"></div>
-
-            <main className="container mx-auto px-4 py-8">
+        <div className="min-h-screen bg-[#F9FAFB] text-gray-900">
+            <main className="container mx-auto px-6 md:px-10 lg:px-12 xl:px-4 max-w-7xl pt-24 pb-8 md:pt-28 md:pb-12">
+                
                 {/* Search Bar */}
                 <div className="flex justify-end mb-6">
                     <div className="relative w-full max-w-md">
@@ -314,6 +307,7 @@ export default function ListingsPage() {
                     </div>
                 </div>
             </main>
+            
             <FeatureIcons />
             <Footer />
         </div>

@@ -15,7 +15,7 @@ interface UserData {
     firstname?: string;
     lastname?: string;
     email?: string;
-    }
+}
 
 export const Navbar = ({ onOpenSidebar }: NavbarProps) => {
     const pathname = usePathname();
@@ -30,10 +30,10 @@ export const Navbar = ({ onOpenSidebar }: NavbarProps) => {
             try {
                 const res = await fetch("/api/auth/me", { method: "GET" });
                 if (res.ok) {
-                const data = await res.json();
-                setUser(data.user);
+                    const data = await res.json();
+                    setUser(data.user);
                 } else {
-                setUser(null);
+                    setUser(null);
                 }
             } catch {
                 setUser(null);
@@ -57,6 +57,15 @@ export const Navbar = ({ onOpenSidebar }: NavbarProps) => {
         : "bg-[#012E4C] shadow-md py-4 transition-all duration-300";
 
     const isAuth = user !== null;
+
+    // --- LOGIC TO HIDE NAVBAR ON SPECIFIC PAGES ---
+    const hiddenRoutes = ["/auth/login", "/auth/signup", "/auth/verify", "/seller/verify"];
+
+    const shouldHideNavbar = hiddenRoutes.some(route => pathname?.startsWith(route));
+
+    if (shouldHideNavbar) {
+        return null;
+    }
 
     return (
         <nav

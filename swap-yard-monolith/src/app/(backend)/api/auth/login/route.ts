@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     const token = await createToken(user.id);
 
     const response = NextResponse.json(
-      { message: "Login successful", user: { id: user.id, email: user.email } },
+      { message: "Login successful", user: { id: user.id, email: user.email, role: user.role } },
       { status: 200 }
     );
 

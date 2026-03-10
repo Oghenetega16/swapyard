@@ -8,13 +8,14 @@ export default function Logo() {
     const pathname = usePathname();
 
     const authPages = ["/login", "/signup", "/verify", "/forgot-password"];
-    const isAuthPage = authPages.includes(pathname);
+    
+    const useBlackTheme = authPages.includes(pathname || "") || pathname?.startsWith("/seller");
 
     return (
         <Link href="/" className="flex items-center gap-2">
             <div className="w-7.5 h-7.5 relative"> 
                 <Image 
-                    src={!isAuthPage ? "/assets/icons/swapyard-logo.svg" : "/assets/icons/swapyard-logo-black.svg"} 
+                    src={useBlackTheme ? "/assets/icons/swapyard-logo-black.svg" : "/assets/icons/swapyard-logo.svg"} 
                     alt="SwapYard Logo" 
                     width={52} 
                     height={52}
@@ -24,7 +25,7 @@ export default function Logo() {
             </div>
             <span 
                 className={`font-bold text-lg md:text-2xl leading-[33.97px] transition-colors duration-300 ${
-                    !isAuthPage ? "text-white" : "text-black"
+                    useBlackTheme ? "text-black" : "text-white"
                 }`}
             >
                 SwapYard
