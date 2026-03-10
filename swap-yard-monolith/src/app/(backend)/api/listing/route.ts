@@ -4,14 +4,8 @@ import { uploadManyImageFiles } from "@/app/(backend)/utils/cloudinary";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/token";
 import { createListingSchema, getListingsSchema } from "./schema";
-import { createClient } from "redis";
 
 export const runtime = "nodejs";
-
-//Intitialize Redis
-const redisClient = createClient()
-
-const default_expiration = 3600;
 
 export async function getCookie(req: Request, name: string) {
   const cookie = req.headers.get("cookie");
@@ -202,8 +196,6 @@ export async function GET(req: Request) {
       prisma.listing.count({ where }),
     ]);
 
-    redisClient.setEx("items", default_expiration, JSON.stringify(items))
-    
     return NextResponse.json(
       {
         ok: true,
@@ -217,8 +209,6 @@ export async function GET(req: Request) {
       },
       { status: 200 }
     );
-
-
   } catch (err) {
     console.error(err);
     return NextResponse.json({ message: "Server error" }, { status: 500 });
