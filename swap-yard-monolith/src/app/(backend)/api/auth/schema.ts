@@ -33,6 +33,15 @@ export const googleClientIdSchema = z.object({
   GOOGLE_CLIENT_ID: z.string().trim().min(5, "Invalid Google client ID"),
 });
 
+export const facebookAuthSchema = z.object({
+  accessToken: z.string().trim().min(1, "Facebook access token is required"),
+});
+
+export const facebookEnvSchema = z.object({
+  FACEBOOK_APP_ID: z.string().trim().min(5, "Invalid Facebook app ID"),
+  FACEBOOK_APP_SECRET: z.string().trim().min(5, "Invalid Facebook app secret"),
+});
+
 export const resetPasswordSchema = z.object({
   token: z.string().trim().min(1, "Token is required"),
   password: z.string().min(8, "Password must be at least 8 characters"),
