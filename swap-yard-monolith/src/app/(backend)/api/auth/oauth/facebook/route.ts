@@ -57,7 +57,7 @@ export async function POST(req: Request) {
 
     const data = debugJson?.data;
 
-    if (!debugRes.ok || !data?.is_valid) {
+    if (!debugRes.ok || !data?.is_valid ||  data.app_id !== FACEBOOK_APP_ID) {
       return NextResponse.json({ message: "Invalid Facebook token" }, { status: 401 });
     }
 
