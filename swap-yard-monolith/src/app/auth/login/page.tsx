@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation"; 
 import Logo from "@/components/ui/Logo";
 import GoogleButton from "../components/googleauthbtn";
+import FacebookButton from "../components/facebookauthbtn";
 
 export default function LoginPage() {
     const router = useRouter(); 
@@ -17,11 +18,6 @@ export default function LoginPage() {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
 
-    const AppleIcon = () => (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg">
-            <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.74s2.57-.9 4.31-.68c.72.03 2.75.29 4.03 2.15-3.6 1.83-2.98 5.67.63 7.15-.65 1.63-1.55 3.25-4.05 3.61zm-1.85-15.1c.7-1.12 1.35-2.27.76-3.95-1.8.19-3.48 1.4-3.95 2.76-.56 1.44.13 2.92 1.83 2.77.16 0 1.25-.97 1.36-1.58z" />
-        </svg>
-    );
 
     const LoginIllustration = (
         <div className="space-y-6">
@@ -136,7 +132,7 @@ export default function LoginPage() {
 
                     <div className="flex mx-auto items-center justify-center space-x-5">
                         <GoogleButton onSuccessMessage={(msg:any) => setSuccess(msg)} onErrorMessage={(msg:any) => setError(msg)}/>
-                        <AppleIcon />
+                        <FacebookButton onSuccessMessage={(msg:any) => setSuccess(msg)} onErrorMessage={(msg:any) => setError(msg)}/>
                     </div>
 
                     <div className="text-center mt-8 text-sm text-gray-600">

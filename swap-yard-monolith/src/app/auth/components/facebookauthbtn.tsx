@@ -55,8 +55,7 @@ export default function FacebookButton({
       onClick={handleLogin}
       className="p-3 rounded-full border shadow-sm hover:bg-gray-50"
     >
-      {/* Your Facebook Icon */}
-      f
+        <FacebookButton/>
     </button>
   );
 }
