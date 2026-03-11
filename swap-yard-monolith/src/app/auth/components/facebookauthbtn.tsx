@@ -50,12 +50,14 @@ export default function FacebookButton({
   };
 
   return (
-    <button
-      type="button"
-      onClick={handleLogin}
-      className="p-3 rounded-full border shadow-sm hover:bg-gray-50"
-    >
-        <FacebookButton/>
-    </button>
+
+  <button
+    type="button"
+    onClick={handleLogin}
+    className="p-3 rounded-full border shadow-sm hover:bg-gray-50"
+  >
+    Continue with Facebook
+  </button>
+
   );
 }
