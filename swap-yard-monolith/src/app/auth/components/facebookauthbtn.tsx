@@ -1,5 +1,7 @@
 "use client";
 
+import { FaFacebook } from "react-icons/fa";
+
 type Props = {
   onSuccessMessage?: (msg: string) => void;
   onErrorMessage?: (msg: string) => void;
@@ -54,9 +56,9 @@ export default function FacebookButton({
   <button
     type="button"
     onClick={handleLogin}
-    className="p-3 rounded-full border shadow-sm hover:bg-gray-50"
+    className="p-2 cursor-pointer border border-gray-300 text-sm rounded-sm flex items-center hover:bg-blue-50 transition "
   >
-    Continue with Facebook
+   <span className="pr-2 text-lg text-blue-500"><FaFacebook/></span> Continue with Facebook
   </button>
 
   );

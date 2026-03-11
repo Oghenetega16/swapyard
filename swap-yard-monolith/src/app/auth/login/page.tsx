@@ -132,7 +132,7 @@ export default function LoginPage() {
 
                     <div className="flex mx-auto items-center justify-center space-x-5">
                         <GoogleButton onSuccessMessage={(msg:any) => setSuccess(msg)} onErrorMessage={(msg:any) => setError(msg)}/>
-                        {/* <FacebookButton onSuccessMessage={(msg:any) => setSuccess(msg)} onErrorMessage={(msg:any) => setError(msg)}/>  */}
+                        <FacebookButton onSuccessMessage={(msg:any) => setSuccess(msg)} onErrorMessage={(msg:any) => setError(msg)}/> 
                     </div>
 
                     <div className="text-center mt-8 text-sm text-gray-600">
