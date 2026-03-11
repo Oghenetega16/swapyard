@@ -4,7 +4,7 @@ import AuthLayout from "@/components/layouts/AuthLayout";
 import { Button } from "@/components/ui/Button";
 import Logo from "@/components/ui/Logo";
 import { Mail } from "lucide-react";
-import Image from "next/image"; // 1. Import Next.js Image
+import Image from "next/image";
 import React, { useRef } from "react";
 
 export default function VerificationPage() {

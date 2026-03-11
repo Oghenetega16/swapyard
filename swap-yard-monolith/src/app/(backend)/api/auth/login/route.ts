@@ -2,33 +2,37 @@ import { prisma } from "@/lib/prisma";
 import {createToken} from "@/lib/token";
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
+import { loginSchema } from "../schema";
 
 export async function POST(req: Request) {
   try {
-    const { email, password } = await req.json();
+    const body = await req.json();
 
-    if (!email || !password) {
-      return NextResponse.json({ message: "Email and password are required" }, { status: 400 });
-    }
+   const validatedInput = loginSchema.safeParse(body)
+
+   if (!validatedInput.success) {
+      return NextResponse.json({message: "Input does not meet required schema", error:validatedInput.error.flatten()}, {status: 400})
+   }
+
+   const {email, password} = validatedInput.data
 
     const user = await prisma.user.findUnique({ where: { email } });
 
     if (!user || !user.password) {
-      return NextResponse.json({ message: "Invalid email or password" }, { status: 401 });
+      return NextResponse.json({ message: "Invalid Credentials" }, { status: 401 });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return NextResponse.json({ message: "Invalid email or password" }, { status: 401 });
+      return NextResponse.json({ message: "Invalid Credentials" }, { status: 401 });
     }
 
     // Optional: enforce email verification later
-    // if (!user.emailVerified) return NextResponse.json({ message: "Verify your email first" }, { status: 403 });
 
     const token = await createToken(user.id);
 
     const response = NextResponse.json(
-      { message: "Login successful", user: { id: user.id, email: user.email } },
+      { message: "Login successful", user: { id: user.id, email: user.email, role: user.role } },
       { status: 200 }
     );
 

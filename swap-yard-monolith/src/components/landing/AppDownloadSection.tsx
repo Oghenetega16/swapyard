@@ -5,7 +5,7 @@ import Image from "next/image";
 export const AppDownloadSection = () => {
     return (
         <section className="bg-[#FFF0EB] py-20 overflow-hidden" aria-labelledby="app-download-heading">
-            <div className="container mx-auto px-4 flex flex-col md:flex-row items-center">
+            <div className="container mx-auto px-6 md:px-10 lg:px-12 xl:px-4 max-w-7xl flex flex-col md:flex-row items-center">
                 <div className="md:w-1/2 mb-10 md:mb-0">
                     <h2 id="app-download-heading" className="text-3xl md:text-5xl font-extrabold text-[#002147] mb-6">List. Chat. Deal. <br/> All on Your Phone</h2>
                     <p className="text-gray-600 mb-8 max-w-md">Download our mobile app to connect with people in your neighborhood. It&apos;s fast, free, and secure.</p>
