@@ -229,7 +229,7 @@ export async function GET(req: Request) {
       };
 
       await redisClient.set(cacheKey, JSON.stringify(responseData), {
-        EX: 360
+        EX: 600
       })
 
     return NextResponse.json(responseData, { status: 200 });
