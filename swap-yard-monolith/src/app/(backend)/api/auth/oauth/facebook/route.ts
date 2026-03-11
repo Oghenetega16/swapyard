@@ -1,18 +1,51 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createToken } from "@/lib/token";
+import { z } from "zod";
+
+const facebookAuthSchema = z.object({
+  accessToken: z.string().trim().min(1, "Facebook access token is required"),
+});
+
+const facebookEnvSchema = z.object({
+  FACEBOOK_APP_ID: z.string().trim().min(5, "Invalid Facebook app ID"),
+  FACEBOOK_APP_SECRET: z.string().trim().min(5, "Invalid Facebook app secret"),
+});
 
 export async function POST(req: Request) {
   try {
-    const { accessToken } = await req.json();
+    const body = await req.json();
 
-    if (!accessToken) {
-      return NextResponse.json({ message: "Missing Facebook accessToken" }, { status: 400 });
+    const validatedBody = facebookAuthSchema.safeParse(body);
+
+    if (!validatedBody.success) {
+      return NextResponse.json(
+        {
+          message: "Invalid request body",
+          errors: validatedBody.error.flatten(),
+        },
+        { status: 400 }
+      );
     }
 
-    const appId = process.env.FACEBOOK_APP_ID!;
-    const appSecret = process.env.FACEBOOK_APP_SECRET!;
-    const appAccessToken = `${appId}|${appSecret}`;
+    const validatedEnv = facebookEnvSchema.safeParse({
+      FACEBOOK_APP_ID: process.env.FACEBOOK_APP_ID,
+      FACEBOOK_APP_SECRET: process.env.FACEBOOK_APP_SECRET,
+    });
+
+    if (!validatedEnv.success) {
+      console.error("Facebook env validation error:", validatedEnv.error.flatten());
+
+      return NextResponse.json(
+        { message: "Facebook OAuth is not configured correctly" },
+        { status: 500 }
+      );
+    }
+
+    const { accessToken } = validatedBody.data;
+    const { FACEBOOK_APP_ID, FACEBOOK_APP_SECRET } = validatedEnv.data;
+
+    const appAccessToken = `${FACEBOOK_APP_ID}|${FACEBOOK_APP_SECRET}`;
 
     const debugUrl =
       `https://graph.facebook.com/debug_token` +
@@ -36,11 +69,14 @@ export async function POST(req: Request) {
     const meRes = await fetch(meUrl);
     const meJson = await meRes.json();
 
-    const email = meJson?.email;
-
     if (!meRes.ok) {
-      return NextResponse.json({ message: "Failed to fetch Facebook profile" }, { status: 401 });
+      return NextResponse.json(
+        { message: "Failed to fetch Facebook profile" },
+        { status: 401 }
+      );
     }
+
+    const email = meJson?.email;
 
     if (typeof email !== "string") {
       return NextResponse.json(
@@ -72,7 +108,11 @@ export async function POST(req: Request) {
 
     const sessionToken = await createToken(user.id);
 
-    const res = NextResponse.json({ message: "Login successful", user }, { status: 200 });
+    const res = NextResponse.json(
+      { message: "Login successful", user },
+      { status: 200 }
+    );
+
     res.cookies.set("session", sessionToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
