@@ -1,52 +1,57 @@
 datasource db {
   provider = "mysql"
-  url = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
- 
+
 generator client {
   provider = "prisma-client-js"
 }
- 
+
 model User {
   id            String          @id @default(cuid())
-  firstname          String?
-  lastname           String?
+  firstname     String?
+  lastname      String?
   username      String?         @unique
-  email         String         @unique
-  password     String?
-  state        String?
+  email         String          @unique
+  password      String?
+  state         String?
   role          Role            @default(BUYER)
-  phoneNumber  String?
+  phoneNumber   String?
   emailVerified DateTime?
   image         String?
-  contract   Boolean @default(false)
+  contract      Boolean         @default(false)
 
-  listings Listing[]
-  receivedReviews Review[] @relation("SellerReviews")
-  givenReviews Review[]   @relation("BuyerReviews")
+  listings           Listing[]
+  receivedReviews    Review[]        @relation("SellerReviews")
+  givenReviews       Review[]        @relation("BuyerReviews")
+
+  cart               Cart?           @relation("BuyerCart")
+  buyerOrders        Order[]         @relation("BuyerOrders")
+  payments           Payment[]       @relation("BuyerPayments")
+
+  sellerAccount      SellerAccount?
+  sellerOrderItems   OrderItem[]     @relation("SellerOrderItems")
+  payouts            Payout[]        @relation("SellerPayouts")
   
- 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-enum Role{
+enum Role {
   BUYER
   SELLER
 }
- 
- 
+
 model VerificationToken {
   id         Int      @id @default(autoincrement())
   identifier String
   token      String
   expires    DateTime
- 
+
   @@unique([identifier, token])
 }
- 
 
-model PasswordResetToken{
+model PasswordResetToken {
   id        String   @id @default(cuid())
   email     String
   token     String   @unique
@@ -56,23 +61,30 @@ model PasswordResetToken{
   @@unique([email, token])
 }
 
-model Listing{
-  id String @id @default(cuid())
-  name String
-  price Float
-  images Image[]
-  description String
-  location String?
-  state String?
-  status  ProductStatus @default(AVAILABLE)
-  condition ProductCondition 
-  negotiable Boolean @default(false)
+model Listing {
+  id             String            @id @default(cuid())
+  name           String
+  price          Float
+  images         Image[]
+  description    String
+  location       String?
+  state          String?
+  status         ProductStatus     @default(AVAILABLE)
+  condition      ProductCondition
+  negotiable     Boolean           @default(false)
+  offersDelivery Boolean           @default(false)
 
-  sellerId String
-  seller User @relation(fields: [sellerId], references: [id])
+  categoryId     String?
+  category       Category?          @relation(fields: [categoryId], references: [id])
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  sellerId       String
+  seller         User              @relation(fields: [sellerId], references: [id])
+
+  cartItems      CartItem[]
+  orderItems     OrderItem[]
+
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
 }
 
 model Image {
@@ -83,12 +95,12 @@ model Image {
   listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
 }
 
-enum ProductStatus{
+enum ProductStatus {
   SOLD
   AVAILABLE
 }
 
-enum ProductCondition{
+enum ProductCondition {
   NEW
   FAIRLYNEW
   SECONDHAND
@@ -96,21 +108,193 @@ enum ProductCondition{
   GOOD
 }
 
-model Review{
+model Review {
   id String @id @default(cuid())
 
-  rating Int
-  comment String?
-  buyerId String
-  buyer User @relation("BuyerReviews", fields: [buyerId], references: [id])
+  rating   Int
+  comment  String?
+  buyerId  String
+  buyer    User @relation("BuyerReviews", fields: [buyerId], references: [id])
 
   sellerId String
-  seller User @relation("SellerReviews", fields: [sellerId], references: [id])
+  seller   User @relation("SellerReviews", fields: [sellerId], references: [id])
 
   createdAt DateTime @default(now())
 
   @@unique([buyerId, sellerId])
-
 }
 
+model Category {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  image     String?
+  publicId  String?
+  listings  Listing[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
 
+model Cart {
+  id        String     @id @default(cuid())
+  buyerId   String     @unique
+  buyer     User       @relation("BuyerCart", fields: [buyerId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+
+  listingId String
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  quantity  Int      @default(1)
+
+  createdAt DateTime @default(now())
+
+  @@unique([cartId, listingId])
+}
+
+model SellerAccount {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  accountName    String   @default("")
+  accountNumber  String   @default("")
+  bankName       String   @default("")
+  bankCode       String?
+  isVerified     Boolean  @default(false)
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Order {
+  id                  String        @id @default(cuid())
+
+  buyerId             String
+  buyer               User          @relation("BuyerOrders", fields: [buyerId], references: [id])
+
+  status              OrderStatus   @default(PENDING_PAYMENT)
+
+  subtotal            Float         @default(0)
+  deliveryFee         Float         @default(0)
+  platformCommission  Float         @default(0)
+  totalAmount         Float         @default(0)
+
+  payment             Payment?
+  items               OrderItem[]
+  payouts             Payout[]
+
+  sellerNotifiedAt    DateTime?
+  buyerConfirmedAt    DateTime?
+  deliveredAt         DateTime?
+  completedAt         DateTime?
+  cancelledAt         DateTime?
+
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+}
+
+model OrderItem {
+  id            String   @id @default(cuid())
+
+  orderId       String
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  listingId     String
+  listing       Listing  @relation(fields: [listingId], references: [id])
+
+  sellerId      String
+  seller        User     @relation("SellerOrderItems", fields: [sellerId], references: [id])
+
+  listingName   String   @default("")
+  unitPrice     Float    @default(0)
+  quantity      Int      @default(1)
+
+  createdAt     DateTime @default(now())
+}
+
+model Payment {
+  id            String          @id @default(cuid())
+
+  orderId       String          @unique
+  order         Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  buyerId       String
+  buyer         User            @relation("BuyerPayments", fields: [buyerId], references: [id])
+
+  amount        Float           @default(0)
+  currency      String          @default("NGN")
+  provider      PaymentProvider @default(PAYSTACK)
+  providerRef   String?         @unique
+  status        PaymentStatus   @default(PENDING)
+
+  paidAt        DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model Payout {
+  id                String        @id @default(cuid())
+
+  orderId           String
+  order             Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  sellerId          String
+  seller            User          @relation("SellerPayouts", fields: [sellerId], references: [id])
+
+  grossAmount       Float         @default(0)
+  commissionAmount  Float         @default(0)
+  netAmount         Float         @default(0)
+
+  status            PayoutStatus  @default(PENDING)
+  providerRef       String?       @unique
+  processedAt       DateTime?
+
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@index([orderId])
+  @@index([sellerId])
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAID
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  BUYER_CONFIRMED
+  COMPLETED
+  CANCELLED
+  REFUNDED
+  DISPUTED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+enum PayoutStatus {
+  PENDING
+  PROCESSING
+  PAID
+  FAILED
+  REVERSED
+  ON_HOLD
+}
+
+enum PaymentProvider {
+  PAYSTACK
+  FLUTTERWAVE
+  STRIPE
+  MANUAL
+}
