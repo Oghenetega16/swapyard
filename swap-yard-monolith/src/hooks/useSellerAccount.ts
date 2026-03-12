@@ -53,6 +53,7 @@ export function useSellerAccount() {
                     stateCountry: user.state || "",
                     accountHolder: `${user.firstname || ""} ${user.lastname || ""}`.trim()
                 }));
+
             } catch (err: any) {
                 setError(err.message);
             } finally {
@@ -63,6 +64,7 @@ export function useSellerAccount() {
         fetchUserData();
     }, []);
 
+    // Handlers
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
@@ -95,7 +97,7 @@ export function useSellerAccount() {
             };
 
             const res = await fetch("/api/auth/me", {
-                method: "PATCH",
+                method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
             });

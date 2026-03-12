@@ -16,6 +16,8 @@ export const registerSchema = z.object({
   role: z.enum(["BUYER", "SELLER"]).default("BUYER"),
 
   contract: z.boolean(),
+
+  bio: z.string().trim().optional(),
 }).strict();
 
 export const loginSchema = z.object({

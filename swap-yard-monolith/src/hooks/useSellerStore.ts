@@ -1,4 +1,3 @@
-// seller/store/hooks/useSellerStore.ts
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 

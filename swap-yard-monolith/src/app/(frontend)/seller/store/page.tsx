@@ -36,18 +36,26 @@ export default function SellerStore() {
                                 <span className="text-2xl font-bold tracking-wider">{getInitials()}</span>
                             )}
                         </div>
-                        <div className="absolute bottom-0 right-0 bg-white rounded-full">
-                            <CheckCircle2 size={20} className="text-[#2ECC71] fill-white" aria-hidden="true" />
-                        </div>
+                        {/* Only show verification badge if user is actually verified (fallback to true for now) */}
+                        {(state.sellerProfile as any)?.isVerified !== false && (
+                            <div className="absolute bottom-0 right-0 bg-white rounded-full">
+                                <CheckCircle2 size={20} className="text-[#2ECC71] fill-white" aria-hidden="true" />
+                            </div>
+                        )}
                     </div>
                     <div className="pt-1">
                         <h2 className="text-2xl font-bold text-gray-900 mb-1">
                             {state.sellerProfile?.firstName ? `${state.sellerProfile.firstName}'s Store` : "My Store"}
                         </h2>
                         <div className="flex items-center justify-center md:justify-start gap-3 text-sm text-gray-600 mb-3">
-                            <span className="flex items-center gap-1"><Star size={16} className="text-[#FFC107] fill-[#FFC107]" aria-hidden="true" /> 4.8 (24 Reviews)</span>
+                            <span className="flex items-center gap-1">
+                                <Star size={16} className="text-[#FFC107] fill-[#FFC107]" aria-hidden="true" /> 
+                                {/* Dynamic rating fallback */}
+                                {(state.sellerProfile as any)?.rating || "4.8"} ({(state.sellerProfile as any)?.reviewCount || "24"} Reviews)
+                            </span>
                             <span className="w-1 h-1 rounded-full bg-gray-300" aria-hidden="true"></span>
-                            <span>Joined 2024</span>
+                            {/* Dynamic joined date fallback */}
+                            <span>Joined {(state.sellerProfile as any)?.createdAt ? new Date((state.sellerProfile as any).createdAt).getFullYear() : "2024"}</span>
                         </div>
                         <p className="text-sm text-gray-500 max-w-md leading-relaxed">
                             {state.sellerProfile?.bio || "No store description added. Head to your account settings to add a bio!"}
@@ -130,7 +138,13 @@ export default function SellerStore() {
                             <div key={item.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow group flex flex-col">
                                 <div className="relative h-48 w-full bg-gray-100 flex items-center justify-center">
                                     {imageUrl ? (
-                                        <Image src={imageUrl} alt={`Image of ${item.name}`} fill className="object-cover" />
+                                        <Image 
+                                            src={imageUrl} 
+                                            alt={`Image of ${item.name}`} 
+                                            fill 
+                                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                                            className="object-cover" 
+                                        />
                                     ) : (
                                         <ImageIcon size={40} className="text-gray-300" aria-hidden="true" />
                                     )}
