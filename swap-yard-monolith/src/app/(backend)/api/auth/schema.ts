@@ -51,3 +51,12 @@ export const resetPasswordSchema = z.object({
 export const requestPasswordResetSchema = z.object({
   email: z.string().trim().email("Enter a valid email address"),
 });
+
+export const updateProfileSchema = z
+  .object({
+    firstname: z.string().trim().min(1, "First name cannot be empty").optional(),
+    lastname: z.string().trim().min(1, "Last name cannot be empty").optional(),
+    phoneNumber: z.string().trim().min(1, "Phone number cannot be empty").optional(),
+    state: z.string().trim().min(1, "State cannot be empty").optional(),
+  })
+  .strict();
