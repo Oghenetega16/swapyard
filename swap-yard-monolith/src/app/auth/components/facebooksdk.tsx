@@ -4,10 +4,14 @@ import { useEffect } from "react";
 
 export default function FacebookProvider() {
   useEffect(() => {
-    if (window.FB) return;
+    if ((window as any).FB) return;
 
-    window.fbAsyncInit = function () {
-      window.FB.init({
+    const script = document.createElement("script");
+    script.src = "https://connect.facebook.net/en_US/sdk.js";
+    script.async = true;
+
+    script.onload = () => {
+      (window as any).FB.init({
         appId: process.env.NEXT_PUBLIC_FACEBOOK_APP_ID,
         cookie: true,
         xfbml: false,
@@ -15,9 +19,6 @@ export default function FacebookProvider() {
       });
     };
 
-    const script = document.createElement("script");
-    script.src = "https://connect.facebook.net/en_US/sdk.js";
-    script.async = true;
     document.body.appendChild(script);
   }, []);
 

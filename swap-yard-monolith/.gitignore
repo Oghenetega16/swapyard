@@ -55,3 +55,4 @@ frontend/.env
 
 # Auto-generated TypeScript types
 frontend/next-env.d.ts
+certificates
