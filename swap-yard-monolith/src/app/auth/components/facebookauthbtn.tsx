@@ -58,7 +58,7 @@ export default function FacebookButton({
             );
           });
       },
-      { scope: "public_profile,email" }
+      { scope: "public_profile" }
     );
   }
 
