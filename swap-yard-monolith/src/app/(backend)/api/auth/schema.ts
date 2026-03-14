@@ -54,9 +54,32 @@ export const requestPasswordResetSchema = z.object({
 
 export const updateProfileSchema = z
   .object({
-    firstname: z.string().trim().min(1, "First name cannot be empty").optional(),
-    lastname: z.string().trim().min(1, "Last name cannot be empty").optional(),
-    phoneNumber: z.string().trim().min(1, "Phone number cannot be empty").optional(),
-    state: z.string().trim().min(1, "State cannot be empty").optional(),
+    firstname: z.string().trim().min(1, "First name cannot be empty").max(100).optional(),
+    lastname: z.string().trim().min(1, "Last name cannot be empty").max(100).optional(),
+    phoneNumber: z.string().trim().min(1, "Phone number cannot be empty").max(30).optional(),
+    email: z.string().trim().email("Enter a valid email address").optional(),
+    state: z.string().trim().min(1, "State cannot be empty").max(100).optional(),
+    bio: z.string().trim().max(500, "Bio cannot exceed 500 characters").optional(),
+    deliveryAddress: z
+      .string()
+      .trim()
+      .max(255, "Delivery address cannot exceed 255 characters")
+      .optional(),
+
+    bankName: z.string().trim().max(100, "Bank name cannot exceed 100 characters").optional(),
+    accountName: z
+      .string()
+      .trim()
+      .max(150, "Account holder name cannot exceed 150 characters")
+      .optional(),
+    accountNumber: z
+      .string()
+      .trim()
+      .regex(/^\d{10,20}$/, "Account number must be between 10 and 20 digits")
+      .optional(),
+    accountType: z.enum(["Savings", "Current"]).optional(),
   })
-  .strict();
+  .strict()
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "At least one field must be provided",
+  });
