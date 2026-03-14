@@ -37,3 +37,21 @@ export const getOrdersSchema = z
     limit: z.coerce.number().int().min(1).max(50).default(10),
   })
   .strict();
+
+
+export const updateOrderSchema = z
+  .object({
+    status: z.enum([
+      "PENDING_PAYMENT",
+      "PAID",
+      "PROCESSING",
+      "SHIPPED",
+      "DELIVERED",
+      "BUYER_CONFIRMED",
+      "COMPLETED",
+      "CANCELLED",
+      "REFUNDED",
+      "DISPUTED",
+    ]),
+  })
+  .strict();
