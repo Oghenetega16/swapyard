@@ -23,6 +23,8 @@ model User {
   contract      Boolean         @default(false)
   bio           String?
   deliveryAddress String?
+  dateOfBirth     DateTime?
+  verification      SellerVerification?
 
   listings           Listing[]
   receivedReviews    Review[]        @relation("SellerReviews")
@@ -265,6 +267,42 @@ model Payout {
 
   @@index([orderId])
   @@index([sellerId])
+}
+
+model SellerVerification {
+  id                       String               @id @default(cuid())
+  userId                   String               @unique
+  user                     User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  fullName                 String?
+  businessName             String?
+  vatNumber                String?
+  nin                      String?
+
+  businessLicenseUrl       String?
+  businessLicensePublicId  String?
+
+  idDocumentUrl            String?
+  idDocumentPublicId       String?
+
+  status                   VerificationStatus   @default(NOT_SUBMITTED)
+  reviewNote               String?
+  submittedAt              DateTime?
+  reviewedAt               DateTime?
+
+  createdAt                DateTime             @default(now())
+  updatedAt                DateTime             @updatedAt
+
+    @@index([status])
+  @@index([businessName])
+  @@index([nin])
+}
+
+enum VerificationStatus {
+  NOT_SUBMITTED
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 enum OrderStatus {
