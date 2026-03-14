@@ -78,6 +78,7 @@ model Listing {
   condition      ProductCondition
   negotiable     Boolean           @default(false)
   offersDelivery Boolean           @default(false)
+  contact        String?
 
   categoryId     String?
   category       Category?          @relation(fields: [categoryId], references: [id])

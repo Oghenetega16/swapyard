@@ -1,28 +1,37 @@
 import { z } from "zod";
 
-export const createListingSchema = z.object({
-  name: z.string().trim().min(1, "Name is required"),
-  description: z.string().trim().min(1, "Description is required"),
-  location: z.string().trim().nullable().optional(),
-  state: z.string().trim().nullable().optional(),
 
+export const createListingSchema = z.object({
+  name: z.string().trim().min(2, "Listing name is required").max(150, "Name is too long"),
+  description: z.string().trim().min(10, "Description must be at least 10 characters"),
+  location: z.string().trim().max(150, "Location is too long").nullable().optional(),
+  state: z.string().trim().max(100, "State is too long").nullable().optional(),
   status: z.enum(["AVAILABLE", "SOLD"]).default("AVAILABLE"),
   condition: z.enum(["NEW", "FAIRLYNEW", "SECONDHAND", "FAIR", "GOOD"]),
-
-  price: z.number().positive("Price must be greater than 0"),
+  price: z.number().finite().positive("Price must be greater than 0"),
   negotiable: z.boolean().default(false),
+  offersDelivery: z.boolean().default(false),
+  contact: z.string().trim().max(50, "Contact is too long").nullable().optional(),
+  categoryId: z.string().trim().cuid("Invalid category").nullable().optional(),
 });
 
 export const getListingsSchema = z.object({
-  q: z.string().trim().optional().default(""),
+  q: z.string().trim().min(1).optional(),
   status: z.enum(["AVAILABLE", "SOLD"]).optional(),
   condition: z.enum(["NEW", "FAIRLYNEW", "SECONDHAND", "FAIR", "GOOD"]).optional(),
-  state: z.string().trim().optional(),
-  sellerId: z.string().trim().optional(),
-
-  minPrice: z.coerce.number().min(0).optional(),
-  maxPrice: z.coerce.number().min(0).optional(),
-
+  state: z.string().trim().min(1).optional(),
+  sellerId: z.string().trim().cuid("Invalid sellerId").optional(),
+  categoryId: z.string().trim().cuid("Invalid categoryId").optional(),
+  minPrice: z.coerce.number().nonnegative().optional(),
+  maxPrice: z.coerce.number().nonnegative().optional(),
+  offersDelivery: z
+    .enum(["true", "false"])
+    .transform((v) => v === "true")
+    .optional(),
+  negotiable: z
+    .enum(["true", "false"])
+    .transform((v) => v === "true")
+    .optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(50).default(12),
 }).refine(
