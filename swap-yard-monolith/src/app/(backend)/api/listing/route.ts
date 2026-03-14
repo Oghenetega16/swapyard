@@ -269,14 +269,14 @@ export async function GET(req: Request) {
 
     if (q) {
       where.OR = [
-        { name: { contains: q, mode: "insensitive" } },
-        { description: { contains: q, mode: "insensitive" } },
-        { location: { contains: q, mode: "insensitive" } },
-        { state: { contains: q, mode: "insensitive" } },
-        { contact: { contains: q, mode: "insensitive" } },
+        { name: { contains: q } },
+        { description: { contains: q } },
+        { location: { contains: q} },
+        { state: { contains: q } },
+        { contact: { contains: q } },
         {
           category: {
-            name: { contains: q, mode: "insensitive" },
+            name: { contains: q },
           },
         },
       ];
