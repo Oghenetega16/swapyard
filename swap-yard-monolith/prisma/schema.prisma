@@ -15,6 +15,7 @@ model User {
   email         String          @unique
   password      String?
   state         String?
+  Address       String?
   role          Role            @default(BUYER)
   phoneNumber   String?
   emailVerified DateTime?
@@ -162,11 +163,12 @@ model SellerAccount {
   id             String   @id @default(cuid())
   userId         String   @unique
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  description    String?
   accountName    String   @default("")
   accountNumber  String   @default("")
   bankName       String   @default("")
   bankCode       String?
+  accountType    String
   isVerified     Boolean  @default(false)
 
   createdAt      DateTime @default(now())
