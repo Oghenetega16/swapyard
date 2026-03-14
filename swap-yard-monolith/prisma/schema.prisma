@@ -15,12 +15,14 @@ model User {
   email         String          @unique
   password      String?
   state         String?
-  Address       String?
+  address       String?
   role          Role            @default(BUYER)
   phoneNumber   String?
   emailVerified DateTime?
   image         String?
   contract      Boolean         @default(false)
+  bio           String?
+  deliveryAddress String?
 
   listings           Listing[]
   receivedReviews    Review[]        @relation("SellerReviews")
