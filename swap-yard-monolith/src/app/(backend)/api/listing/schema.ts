@@ -44,3 +44,27 @@ export const getListingsSchema = z.object({
     path: ["minPrice"],
   }
 );
+
+
+export const updateListingSchema = z
+  .object({
+    name: z.string().trim().min(2, "Name must be at least 2 characters").max(150).optional(),
+    description: z
+      .string()
+      .trim()
+      .min(10, "Description must be at least 10 characters")
+      .optional(),
+    location: z.string().trim().max(150).nullable().optional(),
+    state: z.string().trim().max(100).nullable().optional(),
+    status: z.enum(["AVAILABLE", "SOLD"]).optional(),
+    condition: z.enum(["NEW", "FAIRLYNEW", "SECONDHAND", "FAIR", "GOOD"]).optional(),
+    price: z.number().finite().positive("Price must be greater than 0").optional(),
+    negotiable: z.boolean().optional(),
+    offersDelivery: z.boolean().optional(),
+    contact: z.string().trim().max(50).nullable().optional(),
+    categoryId: z.string().trim().cuid("Invalid categoryId").nullable().optional(),
+    replaceImages: z.boolean().default(false),
+  })
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "At least one field must be provided",
+  });
