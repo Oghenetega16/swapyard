@@ -186,6 +186,15 @@ export async function PATCH(req: Request) {
               accountType: accountType ?? "Savings",
             },
           });
+
+          await tx.user.update({
+            where:{
+              id: userId
+            },
+            data:{
+              role: "SELLER"
+            }
+          })
         }
       }
     });
