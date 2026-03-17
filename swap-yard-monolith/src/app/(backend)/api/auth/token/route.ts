@@ -72,7 +72,7 @@ export async function POST(req: Request) {
     if (error) {
       console.error("Resend Error:", error);
       return NextResponse.json(
-        { message: "Failed to send email" },
+        { message: "If an account exists, a reset link has been sent." },
         { status: 500 }
       );
     }
