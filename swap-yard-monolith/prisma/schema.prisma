@@ -197,6 +197,9 @@ model Order {
   items               OrderItem[]
   payouts             Payout[]
 
+  pickupLocation String?
+pickupNote     String?
+
   sellerNotifiedAt    DateTime?
   buyerConfirmedAt    DateTime?
   deliveredAt         DateTime?
