@@ -12,7 +12,7 @@ export const createListingSchema = z.object({
   negotiable: z.boolean().default(false),
   offersDelivery: z.boolean().default(false),
   contact: z.string().trim().max(50, "Contact is too long").nullable().optional(),
-  categoryId: z.string().trim().cuid("Invalid category").nullable().optional(),
+  categoryId: z.string().trim().cuid("Invalid category"),
 });
 
 export const getListingsSchema = z.object({
