@@ -45,9 +45,7 @@ export async function GET(
           { buyerId: userId },
           {
             items: {
-              some: {
-                sellerId: userId,
-              },
+              some: { sellerId: userId },
             },
           },
         ],
@@ -109,6 +107,7 @@ export async function PATCH(
     const { id } = await ctx.params;
     const body = await req.json();
 
+    // Validate input
     const parsed = updateOrderSchema.safeParse(body);
 
     if (!parsed.success) {
@@ -121,6 +120,9 @@ export async function PATCH(
       );
     }
 
+    const newStatus = parsed.data.status;
+
+    // Get order
     const existingOrder = await prisma.order.findFirst({
       where: {
         id,
@@ -128,9 +130,7 @@ export async function PATCH(
           { buyerId: userId },
           {
             items: {
-              some: {
-                sellerId: userId,
-              },
+              some: { sellerId: userId },
             },
           },
         ],
@@ -144,14 +144,59 @@ export async function PATCH(
       return NextResponse.json({ message: "Order not found" }, { status: 404 });
     }
 
-    const newStatus = parsed.data.status;
+    const isBuyer = existingOrder.buyerId === userId;
 
-    const updateData: {
-      status: typeof newStatus;
-      deliveredAt?: Date;
-      completedAt?: Date;
-      cancelledAt?: Date;
-    } = {
+    const isSeller = existingOrder.items.some(
+      (item) => item.sellerId === userId
+    );
+
+
+    const currentStatus = existingOrder.status;
+
+    if (newStatus === "DELIVERED" && !isSeller) {
+      return NextResponse.json(
+        { message: "Only seller can mark as delivered" },
+        { status: 403 }
+      );
+    }
+    if (newStatus === "COMPLETED" && !isBuyer) {
+      return NextResponse.json(
+        { message: "Only buyer can complete order" },
+        { status: 403 }
+      );
+    }
+
+    if (newStatus === "CANCELLED" && !isBuyer) {
+      return NextResponse.json(
+        { message: "Only buyer can cancel order" },
+        { status: 403 }
+      );
+    }
+
+
+    if (newStatus === "DELIVERED" && currentStatus !== "PAID") {
+      return NextResponse.json(
+        { message: "Order must be PAID before delivery" },
+        { status: 400 }
+      );
+    }
+
+    if (newStatus === "COMPLETED" && currentStatus !== "DELIVERED") {
+      return NextResponse.json(
+        { message: "Order must be DELIVERED before completion" },
+        { status: 400 }
+      );
+    }
+
+    if (newStatus === "CANCELLED" && currentStatus !== "PENDING_PAYMENT") {
+      return NextResponse.json(
+        { message: "Cannot cancel after payment" },
+        { status: 400 }
+      );
+    }
+
+
+    const updateData: any = {
       status: newStatus,
     };
 
@@ -166,6 +211,7 @@ export async function PATCH(
     if (newStatus === "CANCELLED") {
       updateData.cancelledAt = new Date();
     }
+
 
     const order = await prisma.order.update({
       where: { id },
