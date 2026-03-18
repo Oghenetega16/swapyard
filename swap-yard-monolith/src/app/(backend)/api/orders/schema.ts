@@ -55,3 +55,14 @@ export const updateOrderSchema = z
     ]),
   })
   .strict();
+
+export const checkoutSchema = z.object({
+  items: z.array(
+    z.object({
+      listingId: z.string().min(1),
+      quantity: z.number().min(1),
+    })
+  ),
+  pickupLocation: z.string().min(3),
+  pickupNote: z.string().optional(),
+});
