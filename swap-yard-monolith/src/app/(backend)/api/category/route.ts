@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/token";
+import { uploadOneImageFile } from "@/app/(backend)/utils/cloudinary";
+import { createCategorySchema } from "./schema";
 
 export const runtime = "nodejs";
 
@@ -36,29 +38,46 @@ async function getSeller(req: Request) {
 }
 
 export async function POST(req: Request) {
-  try {
-    const admin = await getSeller(req);
+  let uploadedImage: any = null;
 
-    if (!admin) {
+  try {
+    const seller = await getSeller(req);
+
+    if (!seller) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
+    const formData = await req.formData();
 
-    const { name, image, publicId } = body;
+    const rawInput = {
+      name: String(formData.get("name") || "").trim(),
+    };
 
-    if (!name) {
+    const parsed = createCategorySchema.safeParse(rawInput);
+
+    if (!parsed.success) {
       return NextResponse.json(
-        { message: "Name is required" },
+        {
+          message: "Invalid input",
+          errors: parsed.error.flatten().fieldErrors,
+        },
         { status: 400 }
       );
     }
 
+    const file = formData.get("image");
+
+    if (file instanceof File && file.size > 0) {
+      uploadedImage = await uploadOneImageFile(file, {
+        subfolder: "categories",
+      });
+    }
+
     const category = await prisma.category.create({
       data: {
-        name,
-        image,
-        publicId,
+        name: parsed.data.name,
+        image: uploadedImage?.url || null,
+        publicId: uploadedImage?.public_id || null,
       },
     });
 
@@ -67,14 +86,8 @@ export async function POST(req: Request) {
       { status: 201 }
     );
   } catch (err: any) {
-    if (err.code === "P2002") {
-      return NextResponse.json(
-        { message: "Category already exists" },
-        { status: 400 }
-      );
-    }
-
     console.error(err);
+
     return NextResponse.json({ message: "Server error" }, { status: 500 });
   }
 }
@@ -92,10 +105,7 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json(
-      { ok: true, categories },
-      { status: 200 }
-    );
+    return NextResponse.json({ categories }, { status: 200 });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ message: "Server error" }, { status: 500 });
