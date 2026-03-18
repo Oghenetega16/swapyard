@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/token";
-import { createOrderSchema, getOrdersSchema } from "./schema";
+import { getOrdersSchema } from "./schema";
 
 export const runtime = "nodejs";
 

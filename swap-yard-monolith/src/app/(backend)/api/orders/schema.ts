@@ -1,20 +1,5 @@
 import { z } from "zod";
 
-export const createOrderItemSchema = z.object({
-  listingId: z.string().trim().cuid("Invalid listingId"),
-  quantity: z.coerce.number().int().min(1, "Quantity must be at least 1").default(1),
-});
-
-export const createOrderSchema = z
-  .object({
-    items: z.array(createOrderItemSchema).min(1, "At least one item is required"),
-    deliveryFee: z.coerce.number().min(0, "Delivery fee cannot be negative").default(0),
-    platformCommission: z.coerce
-      .number()
-      .min(0, "Platform commission cannot be negative")
-      .default(0),
-  })
-  .strict();
 
 export const getOrdersSchema = z
   .object({
