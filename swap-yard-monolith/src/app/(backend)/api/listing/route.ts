@@ -4,7 +4,6 @@ import { uploadManyImageFiles } from "@/app/(backend)/utils/cloudinary";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/token";
 import { createListingSchema, getListingsSchema } from "./schema";
-import { redisClient } from "@/lib/redis";
 
 export const runtime = "nodejs";
 
@@ -165,10 +164,6 @@ export async function POST(req: Request) {
       },
     });
 
-    const listingKeys = await redisClient.keys("listings:*");
-    if (listingKeys.length > 0) {
-      await redisClient.del(listingKeys);
-    }
 
     return NextResponse.json(
       { message: "Listing created successfully", listing },
@@ -241,11 +236,6 @@ export async function GET(req: Request) {
       limit,
     })}`;
 
-    const cached = await redisClient.get(cacheKey);
-
-    if (cached) {
-      return NextResponse.json(JSON.parse(cached), { status: 200 });
-    }
 
     const skip = (page - 1) * limit;
 
@@ -320,10 +310,6 @@ export async function GET(req: Request) {
         pages: Math.ceil(total / limit),
       },
     };
-
-    await redisClient.set(cacheKey, JSON.stringify(responseData), {
-      EX: 600,
-    });
 
     return NextResponse.json(responseData, { status: 200 });
   } catch (err) {
