@@ -112,6 +112,7 @@ export default function PostListingForm() {
                                         <option value="FAIR">Fair</option>
                                         <option value="GOOD">Good</option>
                                     </select>
+
                                 </div>
                             </div>
                         </div>

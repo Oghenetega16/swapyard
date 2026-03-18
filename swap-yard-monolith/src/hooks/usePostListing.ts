@@ -79,6 +79,7 @@ export function usePostListing() {
 
             const res = await fetch("/api/listing", {
                 method: "POST",
+                credentials:"include",
                 body: formData, 
             });
 
