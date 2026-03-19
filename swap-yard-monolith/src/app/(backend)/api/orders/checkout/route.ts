@@ -29,7 +29,7 @@ async function getUser(req: Request) {
   if (!userId) return null;
 
   return prisma.user.findUnique({
-    where: { id: userId },
+    where: { id: userId, role: "BUYER"},
   });
 }
 
