@@ -57,7 +57,7 @@ export async function POST(req: Request) {
 
     const { items, pickupLocation, pickupNote } = parsed.data;
 
-    // 1. Fetch listings
+    //  Fetch listings
     const listingIds = items.map((i) => i.listingId);
 
     const listings = await prisma.listing.findMany({
@@ -81,7 +81,7 @@ export async function POST(req: Request) {
     }
 
 
-    // 2. Calculate totals
+    // Calculate totals
     let subtotal = 0;
 
     const orderItemsData = items.map((item) => {
@@ -103,7 +103,7 @@ export async function POST(req: Request) {
     const platformCommission = subtotal * 0.05;
     const totalAmount = subtotal + deliveryFee;
 
-    // 3. Create Order
+    // Create Order
     const order = await prisma.order.create({
       data: {
         buyerId: user.id,
@@ -134,7 +134,9 @@ export async function POST(req: Request) {
     });
 
 
-    // 4. Initialize Paystack
+
+
+    // Initialize Paystack: Fails for now since no paystack integration yet
     const paystackRes = await fetch("https://api.paystack.co/transaction/initialize", {
       method: "POST",
       headers: {
@@ -144,7 +146,7 @@ export async function POST(req: Request) {
       body: JSON.stringify({
         email: user.email,
         amount: Math.round(totalAmount * 100), // kobo
-        reference: order.payment?.id, // IMPORTANT
+        reference: order.payment?.id, // Priority key
         callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/success`,
       }),
     });
@@ -158,8 +160,6 @@ export async function POST(req: Request) {
       );
     }
 
-
-    // 5. Save reference
     await prisma.payment.update({
       where: { id: order.payment!.id },
       data: {
