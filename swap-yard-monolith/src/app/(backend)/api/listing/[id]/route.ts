@@ -70,12 +70,7 @@ async function getAuthenticatedSeller(req: Request) {
   return { user };
 }
 
-async function invalidateListingCaches() {
-  const keys = await redisClient.keys("listings:*");
-  if (keys.length) {
-    await redisClient.del(keys);
-  }
-}
+
 
 export async function GET(
   _req: Request,
@@ -297,7 +292,6 @@ export async function PATCH(
       }
     }
 
-    await invalidateListingCaches();
 
     return NextResponse.json(
       { message: "Listing updated successfully", listing },
@@ -361,7 +355,6 @@ export async function DELETE(
       await deleteManyByPublicIds(publicIds);
     }
 
-    await invalidateListingCaches();
 
     return NextResponse.json(
       { message: "Listing deleted successfully" },
