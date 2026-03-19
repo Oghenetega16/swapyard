@@ -17,6 +17,8 @@ async function getCookie(req: Request, name: string) {
   );
 }
 
+
+
 async function getUser(req: Request) {
   const token = await getCookie(req, "session");
   if (!token) return null;
@@ -31,6 +33,7 @@ async function getUser(req: Request) {
   });
 }
 
+
 export async function POST(req: Request) {
   try {
     const user = await getUser(req);
@@ -38,9 +41,8 @@ export async function POST(req: Request) {
     if (!user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
-
+    //Error line
     const body = await req.json();
-
     const parsed = checkoutSchema.safeParse(body);
 
     if (!parsed.success) {
@@ -77,6 +79,7 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+
 
     // 2. Calculate totals
     let subtotal = 0;
@@ -130,6 +133,7 @@ export async function POST(req: Request) {
       },
     });
 
+
     // 4. Initialize Paystack
     const paystackRes = await fetch("https://api.paystack.co/transaction/initialize", {
       method: "POST",
@@ -153,6 +157,7 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+
 
     // 5. Save reference
     await prisma.payment.update({
