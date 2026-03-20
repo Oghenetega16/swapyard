@@ -100,6 +100,7 @@ export function usePostListing() {
 
             const res = await fetch("/api/listing", {
                 method: "POST",
+                credentials:"include",
                 // Do not set Content-Type header when sending FormData
                 body: formData, 
             });

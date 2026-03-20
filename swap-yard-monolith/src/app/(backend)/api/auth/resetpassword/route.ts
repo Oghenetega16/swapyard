@@ -51,7 +51,7 @@ export async function POST(req: Request) {
 
     if (!user) {
       return NextResponse.json(
-        { message: "User no longer exists." },
+        { message: "Authentication process failed" },
         { status: 404 }
       );
     }

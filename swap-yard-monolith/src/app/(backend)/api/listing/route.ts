@@ -4,11 +4,10 @@ import { uploadManyImageFiles } from "@/app/(backend)/utils/cloudinary";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/token";
 import { createListingSchema, getListingsSchema } from "./schema";
-import { redisClient } from "@/lib/redis";
 
 export const runtime = "nodejs";
 
-export async function getCookie(req: Request, name: string) {
+async function getCookie(req: Request, name: string) {
   const cookie = req.headers.get("cookie");
   if (!cookie) return null;
 
@@ -20,7 +19,14 @@ export async function getCookie(req: Request, name: string) {
   );
 }
 
+function toNullableString(value: FormDataEntryValue | null) {
+  const parsed = String(value || "").trim();
+  return parsed ? parsed : null;
+}
+
 export async function POST(req: Request) {
+  let uploaded: Array<{ url: string; public_id: string }> = [];
+
   try {
     const token = await getCookie(req, "session");
 
@@ -28,7 +34,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { userId } = await verifyToken(token);
+    const payload = await verifyToken(token);
+    const userId = typeof payload === "string" ? payload : payload?.userId;
 
     if (!userId) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -39,12 +46,15 @@ export async function POST(req: Request) {
     const rawInput = {
       name: String(formData.get("name") || "").trim(),
       description: String(formData.get("description") || "").trim(),
-      location: String(formData.get("location") || "").trim() || null,
-      state: String(formData.get("state") || "").trim() || null,
-      status: String(formData.get("status") || "AVAILABLE"),
+      location: toNullableString(formData.get("location")),
+      state: toNullableString(formData.get("state")),
+      status: String(formData.get("status") || "AVAILABLE").trim(),
       condition: String(formData.get("condition") || "").trim(),
       price: Number(formData.get("price")),
-      negotiable: formData.get("negotiable") === "true",
+      negotiable: String(formData.get("negotiable")) === "true",
+      offersDelivery: String(formData.get("offersDelivery")) === "true",
+      contact: toNullableString(formData.get("contact")),
+      categoryId: toNullableString(formData.get("categoryId")),
     };
 
     const validatedInput = createListingSchema.safeParse(rawInput);
@@ -53,7 +63,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           message: "Input does not meet required schema",
-          errors: validatedInput.error.flatten(),
+          errors: validatedInput.error.flatten().fieldErrors,
         },
         { status: 400 }
       );
@@ -68,6 +78,9 @@ export async function POST(req: Request) {
       condition,
       price,
       negotiable,
+      offersDelivery,
+      contact,
+      categoryId,
     } = validatedInput.data;
 
     const user = await prisma.user.findUnique({
@@ -76,16 +89,38 @@ export async function POST(req: Request) {
     });
 
     if (!user) {
-      return NextResponse.json({ message: "User does not exist" }, { status: 404 });
+      return NextResponse.json(
+        { message: "User does not exist" },
+        { status: 404 }
+      );
     }
 
     if (user.role !== "SELLER") {
-      return NextResponse.json({ message: "User is not authorized" }, { status: 403 });
+      return NextResponse.json(
+        { message: "User is not authorized" },
+        { status: 403 }
+      );
     }
 
-    const images = formData.getAll("images").filter(Boolean) as File[];
+    if (categoryId) {
+      const categoryExists = await prisma.category.findUnique({
+        where: { id: categoryId },
+        select: { id: true },
+      });
 
-    const uploaded = images.length
+      if (!categoryExists) {
+        return NextResponse.json(
+          { message: "Selected category does not exist" },
+          { status: 400 }
+        );
+      }
+    }
+
+    const images = formData
+      .getAll("images")
+      .filter((file): file is File => file instanceof File && file.size > 0);
+
+    uploaded = images.length
       ? await uploadManyImageFiles(images, { subfolder: "listings" })
       : [];
 
@@ -99,6 +134,9 @@ export async function POST(req: Request) {
         condition,
         price,
         negotiable,
+        offersDelivery,
+        contact,
+        categoryId,
         sellerId: user.id,
         images: {
           create: uploaded.map((img) => ({
@@ -107,12 +145,32 @@ export async function POST(req: Request) {
           })),
         },
       },
-      include: { images: true },
+      include: {
+        images: true,
+        category: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+          },
+        },
+        seller: {
+          select: {
+            id: true,
+            firstname: true,
+            lastname: true,
+          },
+        },
+      },
     });
 
-    return NextResponse.json({ ok: true, listing }, { status: 201 });
+
+    return NextResponse.json(
+      { message: "Listing created successfully", listing },
+      { status: 201 }
+    );
   } catch (err) {
-    console.error(err);
+    console.error("Error creating listing:", err);
     return NextResponse.json({ message: "Server error" }, { status: 500 });
   }
 }
@@ -127,8 +185,11 @@ export async function GET(req: Request) {
       condition: searchParams.get("condition") ?? undefined,
       state: searchParams.get("state") ?? undefined,
       sellerId: searchParams.get("sellerId") ?? undefined,
+      categoryId: searchParams.get("categoryId") ?? undefined,
       minPrice: searchParams.get("minPrice") ?? undefined,
       maxPrice: searchParams.get("maxPrice") ?? undefined,
+      offersDelivery: searchParams.get("offersDelivery") ?? undefined,
+      negotiable: searchParams.get("negotiable") ?? undefined,
       page: searchParams.get("page") ?? undefined,
       limit: searchParams.get("limit") ?? undefined,
     };
@@ -139,7 +200,7 @@ export async function GET(req: Request) {
       return NextResponse.json(
         {
           message: "Invalid query parameters",
-          errors: validatedQuery.error.flatten(),
+          errors: validatedQuery.error.flatten().fieldErrors,
         },
         { status: 400 }
       );
@@ -151,54 +212,64 @@ export async function GET(req: Request) {
       condition,
       state,
       sellerId,
+      categoryId,
       minPrice,
       maxPrice,
+      offersDelivery,
+      negotiable,
       page,
       limit,
     } = validatedQuery.data;
 
-    //Use Redis
-
-    const cacheKey = `listings: ${JSON.stringify({
+    const cacheKey = `listings:${JSON.stringify({
       q,
       status,
       condition,
       state,
       sellerId,
+      categoryId,
       minPrice,
       maxPrice,
+      offersDelivery,
+      negotiable,
       page,
       limit,
-    })}`
+    })}`;
 
-    const cached = await redisClient.get(cacheKey)
-
-    if (cached) {
-      return NextResponse.json(JSON.parse(cached), {status:200})
-    }
 
     const skip = (page - 1) * limit;
 
-    const where: Prisma.ListingWhereInput = {};
-
-    if (status) where.status = status;
-    if (condition) where.condition = condition;
-    if (state) where.state = state;
-    if (sellerId) where.sellerId = sellerId;
+    const where: Prisma.ListingWhereInput = {
+      ...(status ? { status } : {}),
+      ...(condition ? { condition } : {}),
+      ...(state ? { state } : {}),
+      ...(sellerId ? { sellerId } : {}),
+      ...(categoryId ? { categoryId } : {}),
+      ...(offersDelivery !== undefined ? { offersDelivery } : {}),
+      ...(negotiable !== undefined ? { negotiable } : {}),
+      ...(minPrice !== undefined || maxPrice !== undefined
+        ? {
+            price: {
+              ...(minPrice !== undefined ? { gte: minPrice } : {}),
+              ...(maxPrice !== undefined ? { lte: maxPrice } : {}),
+            },
+          }
+        : {}),
+    };
 
     if (q) {
       where.OR = [
         { name: { contains: q } },
         { description: { contains: q } },
-        { location: { contains: q } },
+        { location: { contains: q} },
+        { state: { contains: q } },
+        { contact: { contains: q } },
+        {
+          category: {
+            name: { contains: q },
+          },
+        },
       ];
-    }
-
-    if (minPrice !== undefined || maxPrice !== undefined) {
-      where.price = {
-        ...(minPrice !== undefined ? { gte: minPrice } : {}),
-        ...(maxPrice !== undefined ? { lte: maxPrice } : {}),
-      };
     }
 
     const [items, total] = await Promise.all([
@@ -206,8 +277,20 @@ export async function GET(req: Request) {
         where,
         include: {
           images: true,
+          category: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+            },
+          },
           seller: {
-            select: { id: true },
+            select: {
+              id: true,
+              firstname: true,
+              lastname: true,
+              image: true,
+            },
           },
         },
         orderBy: { createdAt: "desc" },
@@ -218,23 +301,19 @@ export async function GET(req: Request) {
     ]);
 
     const responseData = {
-        ok: true,
-        items,
-        meta: {
-          total,
-          page,
-          limit,
-          pages: Math.ceil(total / limit),
-        }
-      };
-
-      await redisClient.set(cacheKey, JSON.stringify(responseData), {
-        EX: 600
-      })
+      ok: true,
+      items,
+      meta: {
+        total,
+        page,
+        limit,
+        pages: Math.ceil(total / limit),
+      },
+    };
 
     return NextResponse.json(responseData, { status: 200 });
   } catch (err) {
-    console.error(err);
+    console.error("Error fetching listings:", err);
     return NextResponse.json({ message: "Server error" }, { status: 500 });
   }
 }
