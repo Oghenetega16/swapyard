@@ -105,7 +105,7 @@ export default function PostListingForm() {
                                         aria-label="Select item condition"
                                         className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#002147] bg-white appearance-none cursor-pointer"
                                     >
-                                        <option value="">Select Drop down</option>
+                                        <option value="">Select Condition</option>
                                         <option value="NEW">New</option>
                                         <option value="FAIRLYNEW">Used - Like New</option>
                                         <option value="SECONDHAND">Second Hand</option>
@@ -123,11 +123,27 @@ export default function PostListingForm() {
                             <div className="space-y-4">
                                 <div>
                                     <label htmlFor="whatsappContact" className="block text-sm text-gray-700 mb-1.5">Whatsapp Contact</label>
-                                    <input id="whatsappContact" type="text" placeholder="Enter Phone Number" aria-label="Whatsapp Contact Number" className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#002147]" />
+                                    <input 
+                                        id="whatsappContact" 
+                                        type="text" 
+                                        value={state.whatsappContact}
+                                        onChange={(e) => setters.setWhatsappContact(e.target.value)}
+                                        placeholder="Enter Phone Number" 
+                                        aria-label="Whatsapp Contact Number" 
+                                        className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#002147]" 
+                                    />
                                 </div>
                                 <div>
                                     <label htmlFor="phoneContact" className="block text-sm text-gray-700 mb-1.5">Phone Contact</label>
-                                    <input id="phoneContact" type="text" placeholder="Enter Phone Number" aria-label="Phone Contact Number" className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#002147]" />
+                                    <input 
+                                        id="phoneContact" 
+                                        type="text" 
+                                        value={state.phoneContact}
+                                        onChange={(e) => setters.setPhoneContact(e.target.value)}
+                                        placeholder="Enter Phone Number" 
+                                        aria-label="Phone Contact Number" 
+                                        className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#002147]" 
+                                    />
                                 </div>
                                 <div className="flex items-center justify-between pt-2">
                                     <span className="text-sm text-gray-700 font-medium">In app Messaging</span>
@@ -198,9 +214,9 @@ export default function PostListingForm() {
                             <h3 className="text-xl font-bold text-[#002147] mb-4">Location & Delivery</h3>
                             <div className="space-y-4">
                                 <div>
-                                    <label htmlFor="State" className="block text-sm text-gray-700 mb-1.5">State</label>
+                                    <label htmlFor="stateLocation" className="block text-sm text-gray-700 mb-1.5">State</label>
                                     <select 
-                                        id="State" 
+                                        id="stateLocation" 
                                         value={state.stateLocation}
                                         onChange={(e) => setters.setStateLocation(e.target.value)}
                                         aria-label="Select state location"
@@ -212,9 +228,9 @@ export default function PostListingForm() {
                                     </select>
                                 </div>
                                 <div>
-                                    <label htmlFor="Town" className="block text-sm text-gray-700 mb-1.5">Town/City</label>
+                                    <label htmlFor="town" className="block text-sm text-gray-700 mb-1.5">Town/City</label>
                                     <select 
-                                        id="Town" 
+                                        id="town" 
                                         value={state.town}
                                         onChange={(e) => setters.setTown(e.target.value)}
                                         aria-label="Select town or city"
@@ -226,14 +242,17 @@ export default function PostListingForm() {
                                     </select>
                                 </div>
                                 <div>
-                                    <label htmlFor="Delivery option" className="block text-sm text-gray-700 mb-1.5">Delivery Option</label>
+                                    <label htmlFor="deliveryOption" className="block text-sm text-gray-700 mb-1.5">Delivery Option</label>
                                     <select 
-                                        id="Delivery option" 
+                                        id="deliveryOption" 
+                                        value={state.deliveryOption}
+                                        onChange={(e) => setters.setDeliveryOption(e.target.value)}
                                         aria-label="Select delivery option"
                                         className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#002147] bg-white appearance-none cursor-pointer"
                                     >
-                                        <option>Pick up Only</option>
-                                        <option>Delivery Available</option>
+                                        <option value="">Select Option</option>
+                                        <option value="Pick up Only">Pick up Only</option>
+                                        <option value="Delivery Available">Delivery Available</option>
                                     </select>
                                 </div>
                             </div>
@@ -242,10 +261,11 @@ export default function PostListingForm() {
                         {/* Verification Banner */}
                         <div className="flex items-center justify-between bg-white mt-4 py-2">
                             <p className="text-sm text-gray-700 leading-tight">
-                                Want more buyers to trust your listings<br/>Verified sellers get more messages
+                                Want more buyers to trust your listings?<br/>Verified sellers get more messages
                             </p>
                             <button 
                                 type="button" 
+                                onClick={() => handlers.router.push('/seller/kyc')}
                                 aria-label="Navigate to verification page"
                                 className="bg-[#002147] text-white px-5 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-[#001733] transition-colors cursor-pointer"
                             >
@@ -295,7 +315,7 @@ export default function PostListingForm() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6 text-sm text-gray-700">
                         <div>
                             <p className="mb-3">Clear, well-lit images increase your chances of a sale!</p>
-                            <p className="mb-2">Here's how:</p>
+                            <p className="mb-2">Here&apos;s how:</p>
                             <ol className="list-decimal pl-4 space-y-2">
                                 <li>Use natural light to highlight your product and avoid harsh shadows.</li>
                                 <li>Take multiple angles to show all sides of the item.</li>
@@ -305,9 +325,9 @@ export default function PostListingForm() {
                         <div>
                             <ol className="list-decimal pl-4 space-y-2" start={4}>
                                 <li>Be honest about imperfections and show them clearly.</li>
-                                <li>If possible, show the item in context—like a sofa in a living room or a blender on a kitchen counter..</li>
+                                <li>If possible, show the item in context—like a sofa in a living room or a blender on a kitchen counter.</li>
                             </ol>
-                            <p className="mt-4 italic">Bonus Tip! : Clear, honest photos help buyers trust you and make faster decisions. Take your time to showcase your items, and you'll see the results!</p>
+                            <p className="mt-4 italic">Bonus Tip! : Clear, honest photos help buyers trust you and make faster decisions. Take your time to showcase your items, and you&apos;ll see the results!</p>
                         </div>
                     </div>
                 </div>
