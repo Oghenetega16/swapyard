@@ -26,12 +26,12 @@ export function useSellerAccount() {
         phone: "",
         email: "",
         bio: "", 
-        deliveryAddress: "123, Default Street",
+        deliveryAddress: "", 
         stateCountry: "",
-        bankName: "Guaranty Trust Bank",
+        bankName: "",
         accountHolder: "",
-        accountNumber: "0123456767",
-        accountType: "Savings"
+        accountNumber: "",
+        accountType: ""
     });
 
     useEffect(() => {
@@ -43,6 +43,9 @@ export function useSellerAccount() {
                 if (!res.ok) throw new Error(data.message || "Failed to load profile");
 
                 const user = data.user;
+                // Safely extract nested seller account data
+                const sellerAcc = user.sellerAccount || {};
+
                 setFormData(prev => ({
                     ...prev,
                     firstName: user.firstname || "",
@@ -51,7 +54,13 @@ export function useSellerAccount() {
                     email: user.email || "",
                     bio: user.bio || "", 
                     stateCountry: user.state || "",
-                    accountHolder: `${user.firstname || ""} ${user.lastname || ""}`.trim()
+                    deliveryAddress: user.deliveryAddress || "",
+                    
+                    // Map the nested SellerAccount data
+                    bankName: sellerAcc.bankName || "",
+                    accountHolder: sellerAcc.accountName || `${user.firstname || ""} ${user.lastname || ""}`.trim(),
+                    accountNumber: sellerAcc.accountNumber || "",
+                    accountType: sellerAcc.accountType || "Savings" // Provide fallback if none exists
                 }));
 
             } catch (err: any) {
@@ -81,6 +90,7 @@ export function useSellerAccount() {
     const handleSave = async (section: string) => {
         if (section === 'notifications') {
             setEditingSection(null);
+            // Note: Notification preferences will need a separate endpoint or payload update later
             return;
         }
 
@@ -88,12 +98,18 @@ export function useSellerAccount() {
             setIsSaving(true);
             setError("");
 
+            // Ensure ALL form fields are sent to the backend, regardless of which section was edited
             const payload = {
                 firstname: formData.firstName,
                 lastname: formData.lastName,
                 phoneNumber: formData.phone,
                 state: formData.stateCountry,
-                bio: formData.bio 
+                bio: formData.bio,
+                deliveryAddress: formData.deliveryAddress,
+                bankName: formData.bankName,
+                accountHolder: formData.accountHolder,
+                accountNumber: formData.accountNumber,
+                accountType: formData.accountType
             };
 
             const res = await fetch("/api/auth/me", {

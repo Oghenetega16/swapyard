@@ -5,7 +5,7 @@ export function usePostListing() {
     const router = useRouter();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Form State
+    // --- Form State ---
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
     const [price, setPrice] = useState("");
@@ -14,12 +14,17 @@ export function usePostListing() {
     const [town, setTown] = useState("");
     const [isNegotiable, setIsNegotiable] = useState(false);
     
-    // Image & UI State
-    const [images, setImages] = useState<File[]>([]);
+    // --- NEW: Missing Form States ---
     const [category, setCategory] = useState("");
+    const [deliveryOption, setDeliveryOption] = useState("");
+    const [whatsappContact, setWhatsappContact] = useState("");
+    const [phoneContact, setPhoneContact] = useState("");
     const [inAppMessaging, setInAppMessaging] = useState(true);
+    
+    // --- Image & UI State ---
+    const [images, setImages] = useState<File[]>([]);
 
-    // Submission & Modal State
+    // --- Submission & Modal State ---
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState("");
     const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -47,6 +52,10 @@ export function usePostListing() {
         setIsNegotiable(false);
         setImages([]);
         setCategory("");
+        setDeliveryOption("");
+        setWhatsappContact("");
+        setPhoneContact("");
+        setInAppMessaging(true);
         setShowSuccessModal(false);
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
@@ -55,8 +64,8 @@ export function usePostListing() {
         e.preventDefault();
         setError("");
 
-        if (!name || !description || !price || !condition) {
-            setError("Please fill in all required fields (Title, Description, Price, Condition).");
+        if (!name || !description || !price || !condition || !category) {
+            setError("Please fill in all required fields (Title, Description, Price, Category, Condition).");
             return;
         }
 
@@ -64,14 +73,26 @@ export function usePostListing() {
             setIsSubmitting(true);
             const formData = new FormData();
             
+            // Map strings directly
             formData.append("name", name);
             formData.append("description", description);
             formData.append("price", price);
             formData.append("condition", condition);
+            formData.append("category", category); // Now sending category
+            
+            // Map booleans to strings for FormData
             formData.append("negotiable", isNegotiable.toString());
             
+            // Map UI "DeliveryOption" string to DB "offersDelivery" boolean string
+            const offersDelivery = deliveryOption === "Delivery Available" ? "true" : "false";
+            formData.append("offersDelivery", offersDelivery);
+            
             if (stateLocation) formData.append("state", stateLocation);
-            if (town) formData.append("location", town);
+            if (town) formData.append("location", town); // Note: UI uses "town", DB uses "location"
+
+            // Send contact preferences (if backend supports them)
+            if (whatsappContact) formData.append("whatsappContact", whatsappContact);
+            if (phoneContact) formData.append("phoneContact", phoneContact);
 
             images.forEach((image) => {
                 formData.append("images", image);
@@ -79,12 +100,18 @@ export function usePostListing() {
 
             const res = await fetch("/api/listing", {
                 method: "POST",
+                // Do not set Content-Type header when sending FormData
                 body: formData, 
             });
 
             const data = await res.json();
 
             if (!res.ok) {
+                // If Zod validation failed on backend, show the first specific error
+                if (data.errors) {
+                    const firstError = Object.values(data.errors)[0];
+                    throw new Error(firstError ? String(firstError) : "Validation failed");
+                }
                 throw new Error(data.message || "Failed to post listing");
             }
 
@@ -97,16 +124,16 @@ export function usePostListing() {
         }
     };
 
-    // Return everything the UI needs to render and interact
     return {
         state: {
             name, description, price, condition, stateLocation, town, 
-            isNegotiable, images, category, inAppMessaging, 
-            isSubmitting, error, showSuccessModal
+            isNegotiable, images, category, deliveryOption, whatsappContact, phoneContact,
+            inAppMessaging, isSubmitting, error, showSuccessModal
         },
         setters: {
             setName, setDescription, setPrice, setCondition, setStateLocation, 
-            setTown, setIsNegotiable, setCategory, setInAppMessaging, setShowSuccessModal
+            setTown, setIsNegotiable, setCategory, setDeliveryOption, setWhatsappContact,
+            setPhoneContact, setInAppMessaging, setShowSuccessModal
         },
         refs: { fileInputRef },
         handlers: { handleImageChange, removeImage, resetForm, handleSubmit, router }

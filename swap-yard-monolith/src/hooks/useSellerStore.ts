@@ -13,46 +13,98 @@ export interface Listing {
 }
 
 export interface SellerProfile {
+    id: string; // Needed for fetching reviews
     firstName: string;
     lastName: string;
     bio: string;
     profileImageUrl: string | null;
+    createdAt?: string;
+    isVerified?: boolean;
+}
+
+// NEW: Interface for Reviews
+export interface Review {
+    id: string;
+    rating: number;
+    comment: string | null;
+    createdAt: string;
+    buyer: {
+        id: string;
+        // The backend currently only sends 'id'. 
+        // We define these in case the backend team updates the select statement.
+        firstname?: string;
+        lastname?: string;
+        image?: string;
+    };
 }
 
 export function useSellerStore() {
     const router = useRouter();
+    
+    // Core Data States
     const [listings, setListings] = useState<Listing[]>([]);
     const [sellerProfile, setSellerProfile] = useState<SellerProfile | null>(null); 
+    const [reviews, setReviews] = useState<Review[]>([]);
+    const [reviewStats, setReviewStats] = useState({ rating: 0, count: 0 });
     
+    // UI States
     const [isLoading, setIsLoading] = useState(true);
     const [isDeleting, setIsDeleting] = useState(false);
     const [itemToDelete, setItemToDelete] = useState<string | null>(null);
     const [error, setError] = useState("");
 
+    // Filter States
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("All");
 
     useEffect(() => {
-        Promise.all([fetchStoreItems(), fetchSellerProfile()]).finally(() => {
-            setIsLoading(false);
-        });
+        // We need to fetch the profile first to get the user's ID
+        // so we can pass it as 'sellerId' to the reviews endpoint.
+        const initializeStore = async () => {
+            setIsLoading(true);
+            try {
+                const profileData = await fetchSellerProfile();
+                
+                // Fetch listings and reviews in parallel once we know who the user is
+                const promises: Promise<any>[] = [fetchStoreItems()];
+                
+                if (profileData && profileData.id) {
+                    promises.push(fetchReviews(profileData.id));
+                }
+
+                await Promise.all(promises);
+
+            } catch (err) {
+                console.error("Initialization error", err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        initializeStore();
     }, []);
 
-    // NEW: Fetch Profile Data
     const fetchSellerProfile = async () => {
         try {
             const res = await fetch("/api/auth/me");
-            if (!res.ok) return;
+            if (!res.ok) return null;
             const data = await res.json();
             
-            setSellerProfile({
+            const profile = {
+                id: data.user.id,
                 firstName: data.user.firstname || "",
                 lastName: data.user.lastname || "",
                 bio: data.user.bio || "",
-                profileImageUrl: data.user.avatarUrl || null 
-            });
+                profileImageUrl: data.user.image || null, // Updated to match schema ('image' instead of 'avatarUrl')
+                createdAt: data.user.createdAt,
+                isVerified: true // Fallback or map from sellerAccount relation if available
+            };
+            
+            setSellerProfile(profile);
+            return profile;
         } catch (err) {
             console.error("Failed to fetch profile data for store header", err);
+            return null;
         }
     };
 
@@ -67,6 +119,31 @@ export function useSellerStore() {
             setListings(data.items || []);
         } catch (err: any) {
             setError(err.message);
+        }
+    };
+
+    // NEW: Fetch Reviews Function
+    const fetchReviews = async (sellerId: string) => {
+        try {
+            const res = await fetch(`/api/reviews?sellerId=${sellerId}&limit=50`);
+            const data = await res.json();
+
+            if (!res.ok) throw new Error(data.message || "Failed to fetch reviews");
+
+            const fetchedReviews = data.items || [];
+            setReviews(fetchedReviews);
+
+            // Calculate dynamic stats
+            if (fetchedReviews.length > 0) {
+                const sum = fetchedReviews.reduce((acc: number, curr: Review) => acc + curr.rating, 0);
+                setReviewStats({
+                    rating: sum / fetchedReviews.length,
+                    count: data.meta?.total || fetchedReviews.length
+                });
+            }
+        } catch (err) {
+            console.error("Failed to fetch reviews", err);
+            // Don't set global error for reviews failing so the store listings still show
         }
     };
 
@@ -122,8 +199,16 @@ export function useSellerStore() {
 
     return {
         state: { 
-            searchQuery, statusFilter, filteredItems, isLoading, 
-            isDeleting, itemToDelete, error, sellerProfile 
+            searchQuery, 
+            statusFilter, 
+            filteredItems, 
+            isLoading, 
+            isDeleting, 
+            itemToDelete, 
+            error, 
+            sellerProfile,
+            reviews,      // Expose reviews
+            reviewStats   // Expose review stats
         },
         setters: { setSearchQuery, setStatusFilter },
         handlers: { handleEdit, confirmDelete, cancelDelete, executeDelete },
