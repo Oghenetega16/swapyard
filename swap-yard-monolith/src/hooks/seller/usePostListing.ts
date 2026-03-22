@@ -1,5 +1,10 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+
+export interface Category {
+    id: string; // The CUID
+    name: string;
+}
 
 export function usePostListing() {
     const router = useRouter();
@@ -14,8 +19,9 @@ export function usePostListing() {
     const [town, setTown] = useState("");
     const [isNegotiable, setIsNegotiable] = useState(false);
     
-    // --- NEW: Missing Form States ---
-    const [category, setCategory] = useState("");
+    // --- NEW: Category & Contact States ---
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [categoryId, setCategoryId] = useState("");
     const [deliveryOption, setDeliveryOption] = useState("");
     const [whatsappContact, setWhatsappContact] = useState("");
     const [phoneContact, setPhoneContact] = useState("");
@@ -23,13 +29,27 @@ export function usePostListing() {
     
     // --- Image & UI State ---
     const [images, setImages] = useState<File[]>([]);
-
-    // --- Submission & Modal State ---
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState("");
     const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-    // --- HANDLERS ---
+    // Fetch dynamic categories on mount so we can send valid CUIDs
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                // Assuming you have a category endpoint. Adjust URL if needed.
+                const res = await fetch("/api/category");
+                const data = await res.json();
+                if (res.ok) {
+                    setCategories(data.categories || data.items || []);
+                }
+            } catch (err) {
+                console.error("Failed to fetch categories:", err);
+            }
+        };
+        fetchCategories();
+    }, []);
+
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             const selectedFiles = Array.from(e.target.files);
@@ -51,7 +71,7 @@ export function usePostListing() {
         setTown("");
         setIsNegotiable(false);
         setImages([]);
-        setCategory("");
+        setCategoryId("");
         setDeliveryOption("");
         setWhatsappContact("");
         setPhoneContact("");
@@ -64,7 +84,7 @@ export function usePostListing() {
         e.preventDefault();
         setError("");
 
-        if (!name || !description || !price || !condition || !category) {
+        if (!name || !description || !price || !condition || !categoryId) {
             setError("Please fill in all required fields (Title, Description, Price, Category, Condition).");
             return;
         }
@@ -73,26 +93,23 @@ export function usePostListing() {
             setIsSubmitting(true);
             const formData = new FormData();
             
-            // Map strings directly
+            // Map exact fields matching your backend schema.ts
             formData.append("name", name);
             formData.append("description", description);
             formData.append("price", price);
             formData.append("condition", condition);
-            formData.append("category", category); // Now sending category
-            
-            // Map booleans to strings for FormData
+            formData.append("categoryId", categoryId); 
             formData.append("negotiable", isNegotiable.toString());
             
-            // Map UI "DeliveryOption" string to DB "offersDelivery" boolean string
             const offersDelivery = deliveryOption === "Delivery Available" ? "true" : "false";
             formData.append("offersDelivery", offersDelivery);
             
             if (stateLocation) formData.append("state", stateLocation);
-            if (town) formData.append("location", town); // Note: UI uses "town", DB uses "location"
+            if (town) formData.append("location", town);
 
-            // Send contact preferences (if backend supports them)
-            if (whatsappContact) formData.append("whatsappContact", whatsappContact);
-            if (phoneContact) formData.append("phoneContact", phoneContact);
+            // Consolidate contacts into the single 'contact' field expected by schema
+            const finalContact = phoneContact || whatsappContact;
+            if (finalContact) formData.append("contact", finalContact);
 
             images.forEach((image) => {
                 formData.append("images", image);
@@ -100,17 +117,14 @@ export function usePostListing() {
 
             const res = await fetch("/api/listing", {
                 method: "POST",
-                credentials:"include",
-                // Do not set Content-Type header when sending FormData
                 body: formData, 
             });
 
             const data = await res.json();
 
             if (!res.ok) {
-                // If Zod validation failed on backend, show the first specific error
                 if (data.errors) {
-                    const firstError = Object.values(data.errors)[0];
+                    const firstError = Object.values(data.errors).flat()[0];
                     throw new Error(firstError ? String(firstError) : "Validation failed");
                 }
                 throw new Error(data.message || "Failed to post listing");
@@ -128,12 +142,12 @@ export function usePostListing() {
     return {
         state: {
             name, description, price, condition, stateLocation, town, 
-            isNegotiable, images, category, deliveryOption, whatsappContact, phoneContact,
+            isNegotiable, images, categoryId, categories, deliveryOption, whatsappContact, phoneContact,
             inAppMessaging, isSubmitting, error, showSuccessModal
         },
         setters: {
             setName, setDescription, setPrice, setCondition, setStateLocation, 
-            setTown, setIsNegotiable, setCategory, setDeliveryOption, setWhatsappContact,
+            setTown, setIsNegotiable, setCategoryId, setDeliveryOption, setWhatsappContact,
             setPhoneContact, setInAppMessaging, setShowSuccessModal
         },
         refs: { fileInputRef },

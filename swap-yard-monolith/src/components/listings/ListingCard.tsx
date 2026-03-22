@@ -16,6 +16,7 @@ interface ListingCardProps {
     rating?: number;
     reviews?: number;
     isVerified?: boolean;
+    condition: string;
 }
 
 export const ListingCard = ({
@@ -28,14 +29,66 @@ export const ListingCard = ({
     rating,
     reviews,
     isVerified,
+    condition
 }: ListingCardProps) => {
     const [isLiked, setIsLiked] = useState(false);
 
+    const handleLike = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsLiked(!isLiked);
+    };
+
+    const handleCart = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log("Added to cart");
+    };
+
     return (
-        <div className="group bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full">
-            {/* Image Container */}
-            <Link href={`/listings/${id}`}>
-                <div className="relative h-48 w-full bg-gray-100">
+        <div className="group bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full relative">
+            
+            {/* Absolute Action Buttons (Outside the Link) */}
+            <div className="absolute top-3 right-3 flex flex-col gap-2 z-10">
+                {/* Heart / Like Button */}
+                <button
+                    type="button"
+                    onClick={handleLike}
+                    className={`p-2 bg-white rounded-full shadow-sm transition-all duration-300 cursor-pointer ${
+                        isLiked 
+                            ? "text-[#EB3B18] opacity-100" 
+                            : "text-gray-400 opacity-0 group-hover:opacity-100 hover:text-[#EB3B18] hover:bg-red-50" 
+                    }`}
+                    aria-label={isLiked ? "Remove from favorites" : "Add to favorites"}
+                >
+                    <Heart 
+                        size={16} 
+                        fill={isLiked ? "#EB3B18" : "none"} 
+                        className="transition-colors duration-300"
+                    />
+                </button>
+
+                {/* Cart Button */}
+                <button
+                    type="button"
+                    onClick={handleCart}
+                    className="p-2 bg-white rounded-full shadow-sm text-gray-400 opacity-0 group-hover:opacity-100 hover:text-[#EB3B18] hover:bg-orange-50 transition-all duration-300 cursor-pointer"
+                    aria-label="Add to cart"
+                >
+                    <IoCart size={16} />
+                </button>
+            </div>
+
+            {/* Category Tag (Outside the Link so it stays on top) */}
+            <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-gray-700 rounded-sm z-10 pointer-events-none">
+                {category}
+            </span>
+
+            {/* Clickable Area (The Link) */}
+            <Link href={`/listings/${id}`} className="flex flex-col h-full outline-none focus:ring-2 focus:ring-[#002147]">
+                
+                {/* Image Container */}
+                <div className="relative h-48 w-full bg-gray-100 shrink-0">
                     <Image
                         src={image}
                         alt={title}
@@ -43,41 +96,6 @@ export const ListingCard = ({
                         className="object-cover group-hover:scale-105 transition-transform duration-500"
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                     />
-                    
-                    <div className="absolute top-3 right-3 flex flex-col gap-2">
-                        {/* Heart / Like Button */}
-                        <button 
-                            onClick={(e) => {
-                                e.preventDefault();
-                                setIsLiked(!isLiked);
-                            }}
-                            className={`p-2 bg-white rounded-full shadow-sm transition-all duration-300 ${
-                                isLiked 
-                                    ? "text-[#EB3B18] opacity-100" 
-                                    : "text-gray-400 opacity-0 group-hover:opacity-100 hover:text-[#EB3B18] hover:bg-red-50" 
-                            }`}
-                            aria-label={isLiked ? "Remove from favorites" : "Add to favorites"}
-                        >
-                            <Heart 
-                                size={16} 
-                                fill={isLiked ? "#EB3B18" : "none"} 
-                                className="transition-colors duration-300"
-                            />
-                        </button>
-
-                        {/* Cart Button */}
-                        <button 
-                            className="p-2 bg-white rounded-full shadow-sm text-gray-400 opacity-0 group-hover:opacity-100 hover:text-[#EB3B18] hover:bg-orange-50 transition-all duration-300"
-                            aria-label="Add to cart"
-                        >
-                            <IoCart size={16} />
-                        </button>
-                    </div>
-
-                    {/* Category Tag */}
-                    <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-gray-700 rounded-sm">
-                        {category}
-                    </span>
                 </div>
 
                 {/* Content */}

@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { Search, Edit, Trash2, Eye, Star, Share2, CheckCircle2, MoreVertical, Plus, Image as ImageIcon, X, AlertTriangle, MessageSquareOff } from "lucide-react";
 import Link from "next/link";
-import { useSellerStore } from "@/hooks/useSellerStore";
+import { useSellerStore } from "@/hooks/seller/useSellerStore";
 
 export default function SellerStore() {
     const { state, setters, handlers, helpers } = useSellerStore();
@@ -186,7 +186,9 @@ export default function SellerStore() {
                                         </div>
 
                                         <div className="p-4 flex-1 flex flex-col">
-                                            <div className="text-xs text-gray-500 mb-1">{item.category || "General"}</div>
+                                            <div className="text-xs text-gray-500 mb-1">
+                                                {typeof item.category === 'object' ? item.category?.name : (item.category || "General")}
+                                            </div>
                                             <h3 className="text-sm font-bold text-gray-900 mb-1 line-clamp-1" title={item.name}>{item.name}</h3>
                                             <p className="font-extrabold text-[#EB3B18] mb-3">{helpers.formatPrice(item.price)}</p>
                                             

@@ -1,34 +1,33 @@
 "use client";
 
-import { Search, ChevronDown } from "lucide-react";
-import { useSellerOrders } from "@/hooks/useSellerOrders";
+import { Search, ChevronDown, Truck } from "lucide-react";
+import { useSellerOrders } from "@/hooks/seller/useSellerOrders";
 
 export default function SellerOrders() {
-    const { state, setters, helpers } = useSellerOrders();
+    const { state, setters, handlers, helpers } = useSellerOrders();
 
-    // Dynamically style badges based on Prisma OrderStatus Enum
     const getStatusStyle = (status: string) => {
         switch (status) {
             case 'DELIVERED':
             case 'COMPLETED':
-            case 'PAID':
             case 'BUYER_CONFIRMED':
-                return "text-[#2ECC71] border-[#2ECC71]"; // Green
+                return "text-[#2ECC71] border-[#2ECC71] bg-green-50"; 
+            case 'PAID':
+                return "text-[#3498DB] border-[#3498DB] bg-blue-50"; 
             case 'SHIPPED':
-                return "text-[#F1C40F] border-[#F1C40F]"; // Yellow/Orange
+                return "text-[#F1C40F] border-[#F1C40F] bg-yellow-50"; 
             case 'PENDING_PAYMENT':
             case 'PROCESSING':
-                return "text-[#3498DB] border-[#3498DB]"; // Blue
+                return "text-gray-600 border-gray-300 bg-gray-50";
             case 'CANCELLED':
             case 'REFUNDED':
             case 'DISPUTED':
-                return "text-[#E74C3C] border-[#E74C3C]"; // Red
+                return "text-[#E74C3C] border-[#E74C3C] bg-red-50"; 
             default:
-                return "text-gray-500 border-gray-500";
+                return "text-gray-500 border-gray-200 bg-gray-50";
         }
     };
 
-    // Format Prisma Enums (e.g., 'PENDING_PAYMENT' -> 'Pending Payment')
     const formatStatusText = (status: string) => {
         return status.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
     };
@@ -52,7 +51,6 @@ export default function SellerOrders() {
 
             {/* Top Toolbar: Search & Sort */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-                {/* Search Bar */}
                 <div className="relative w-full max-w-2xl">
                     <input 
                         type="text" 
@@ -64,14 +62,11 @@ export default function SellerOrders() {
                     <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                 </div>
 
-                {/* Sort Dropdown */}
                 <div className="flex items-center gap-3 shrink-0">
                     <label htmlFor="sortOrders" className="text-sm text-gray-700 font-medium">Sort by:</label>
                     <div className="relative">
                         <select 
                             id="sortOrders"
-                            title="Sort Orders"
-                            aria-label="Sorting option" 
                             value={state.sortBy}
                             onChange={(e) => setters.setSortBy(e.target.value)}
                             className="appearance-none bg-[#EB3B18] text-white text-sm font-medium px-4 py-2 pr-10 rounded-lg cursor-pointer focus:outline-none shadow-sm"
@@ -92,33 +87,55 @@ export default function SellerOrders() {
                             <th className="px-4 py-4 rounded-tl-lg font-medium whitespace-nowrap">Order ID</th>
                             <th className="px-4 py-4 font-medium whitespace-nowrap">Buyer</th>
                             <th className="px-4 py-4 font-medium min-w-50">Item</th>
-                            <th className="px-4 py-4 font-medium whitespace-nowrap">Item Condition</th>
+                            <th className="px-4 py-4 font-medium whitespace-nowrap">Condition</th>
                             <th className="px-4 py-4 font-medium whitespace-nowrap">Price</th>
-                            <th className="px-4 py-4 rounded-tr-lg font-medium whitespace-nowrap">Order Status</th>
+                            <th className="px-4 py-4 font-medium whitespace-nowrap">Status</th>
+                            <th className="px-4 py-4 rounded-tr-lg font-medium whitespace-nowrap text-right">Action</th>
                         </tr>
                     </thead>
                     <tbody className="text-sm text-gray-800">
                         {state.orders.length === 0 ? (
                             <tr>
-                                <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
+                                <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
                                     No orders found matching your search.
                                 </td>
                             </tr>
                         ) : (
-                            state.orders.map((order) => (
-                                <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                                    <td className="px-4 py-5 font-mono text-xs text-gray-500">{order.orderId}</td>
-                                    <td className="px-4 py-5 font-medium">{order.buyerName}</td>
-                                    <td className="px-4 py-5">{order.itemName}</td>
-                                    <td className="px-4 py-5 capitalize">{order.condition.toLowerCase()}</td>
-                                    <td className="px-4 py-5 font-bold">{helpers.formatPrice(order.price)}</td>
-                                    <td className="px-4 py-5">
-                                        <span className={`px-4 py-1.5 rounded-md border text-xs font-semibold whitespace-nowrap ${getStatusStyle(order.status)}`}>
-                                            {formatStatusText(order.status)}
-                                        </span>
-                                    </td>
-                                </tr>
-                            ))
+                            state.orders.map((order) => {
+                                // According to backend rules, Seller can mark as Delivered if status is PAID
+                                const canDeliver = order.status === "PAID" || order.status === "SHIPPED";
+
+                                return (
+                                    <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                                        <td className="px-4 py-5 font-mono text-xs text-gray-500">{order.displayOrderId}</td>
+                                        <td className="px-4 py-5 font-medium">{order.buyerName}</td>
+                                        <td className="px-4 py-5">{order.itemName}</td>
+                                        <td className="px-4 py-5 capitalize">{order.condition.toLowerCase()}</td>
+                                        <td className="px-4 py-5 font-bold">{helpers.formatPrice(order.price)}</td>
+                                        <td className="px-4 py-5">
+                                            <span className={`px-3 py-1.5 rounded-md border text-xs font-bold whitespace-nowrap ${getStatusStyle(order.status)}`}>
+                                                {formatStatusText(order.status)}
+                                            </span>
+                                        </td>
+                                        <td className="px-4 py-5 text-right">
+                                            {canDeliver && (
+                                                <button
+                                                    onClick={() => handlers.updateOrderStatus(order.rawOrderId, "DELIVERED")}
+                                                    disabled={state.isUpdating === order.rawOrderId}
+                                                    className="inline-flex items-center gap-1.5 bg-[#002147] hover:bg-[#001733] text-white px-3 py-1.5 rounded-md text-xs font-bold transition-colors disabled:opacity-50 cursor-pointer"
+                                                >
+                                                    {state.isUpdating === order.rawOrderId ? (
+                                                        <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                                    ) : (
+                                                        <Truck size={14} />
+                                                    )}
+                                                    Mark Delivered
+                                                </button>
+                                            )}
+                                        </td>
+                                    </tr>
+                                );
+                            })
                         )}
                     </tbody>
                 </table>

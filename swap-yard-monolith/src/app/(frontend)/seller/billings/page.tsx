@@ -1,7 +1,7 @@
 "use client";
 
 import { Search, ChevronDown } from "lucide-react";
-import { useSellerBilling } from "@/hooks/useSellerBilling";
+import { useSellerBilling } from "@/hooks/seller/useSellerBilling";
 
 export default function SellerBillings() {
     const { 

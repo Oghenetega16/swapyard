@@ -1,21 +1,59 @@
 "use client";
 
-import { Search, ChevronDown, Check } from "lucide-react";
-import { useState } from "react";
+import { ChevronDown, Check } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
-export const FilterSidebar = () => {
-    // Mock States for UI demo
-    const [priceRange, setPriceRange] = useState({ min: 10000, max: 50000 });
+export interface FilterSidebarProps {
+    selectedCategories: string[];
+    onToggleCategory: (category: string) => void;
+    selectedConditions: string[];
+    onToggleCondition: (condition: string) => void;
+    priceRange: { min: number; max: number };
+    onPriceChange: (type: "min" | "max", value: number) => void;
+    location: { state: string; city: string };
+    onLocationChange: (type: "state" | "city", value: string) => void;
+    isVerified: boolean;
+    onToggleVerified: () => void;
+    selectedDelivery: string[];
+    onToggleDelivery: (option: string) => void;
+    onCloseMobile?: () => void;    
+    onClearAllMobile?: () => void; 
+}
+
+export const FilterSidebar = ({
+    selectedCategories,
+    onToggleCategory,
+    selectedConditions,
+    onToggleCondition,
+    priceRange,
+    onPriceChange,
+    location,
+    onLocationChange,
+    isVerified,
+    onToggleVerified,
+    selectedDelivery,
+    onToggleDelivery,
+    onCloseMobile,
+    onClearAllMobile
+}: FilterSidebarProps) => {
+
+    const conditionMap = [
+        { label: "New", value: "NEW" },
+        { label: "Used - Like New", value: "FAIRLYNEW" },
+        { label: "Second Hand", value: "SECONDHAND" },
+        { label: "Good", value: "GOOD" },
+        { label: "Fair", value: "FAIR" }
+    ];
 
     return (
         <aside className="w-full bg-white p-4 md:p-0">
+            {/* Mobile Header */}
             <div className="flex justify-between items-center mb-6 md:hidden">
                  <h2 className="text-xl font-bold">Filters</h2>
-                 <button className="text-sm text-[#D84315] font-bold">Close</button>
+                 <button type="button" onClick={onCloseMobile} className="text-sm text-[#D84315] font-bold cursor-pointer">Close</button>
             </div>
 
-            {/* Header - Desktop Only */}
+            {/* Desktop Header */}
             <div className="hidden md:block mb-6 pb-4 border-b border-gray-100">
                 <h3 className="font-extrabold text-xl text-[#002147]">Filter Options</h3>
             </div>
@@ -27,7 +65,13 @@ export const FilterSidebar = () => {
                     {["Furniture", "Kitchen & Dining", "Office", "Bedroom", "Decor", "Baby & Kids", "Outdoor", "Electronics"].map((cat) => (
                         <label key={cat} className="flex items-center gap-2 cursor-pointer group">
                             <div className="relative flex items-center">
-                                <input type="checkbox" className="peer appearance-none w-4 h-4 border border-gray-300 rounded checked:bg-[#002147] checked:border-[#002147] transition-colors" />
+                                <input 
+                                    type="checkbox" 
+                                    aria-label={`Category ${cat}`}
+                                    checked={selectedCategories.includes(cat)}
+                                    onChange={() => onToggleCategory(cat)}
+                                    className="peer appearance-none w-4 h-4 border border-gray-300 rounded checked:bg-[#002147] checked:border-[#002147] transition-colors cursor-pointer" 
+                                />
                                 <Check size={10} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100 pointer-events-none" />
                             </div>
                             <span className="text-sm text-gray-600 group-hover:text-gray-900">{cat}</span>
@@ -45,13 +89,19 @@ export const FilterSidebar = () => {
                     <ChevronDown size={16} className="text-gray-400" />
                 </div>
                 <div className="space-y-2">
-                    {["New", "Barely Used", "Used", "Needs Repair"].map((cond) => (
-                        <label key={cond} className="flex items-center gap-2 cursor-pointer group">
+                    {conditionMap.map((cond) => (
+                        <label key={cond.value} className="flex items-center gap-2 cursor-pointer group">
                             <div className="relative flex items-center">
-                                <input type="checkbox" className="peer appearance-none w-4 h-4 border border-gray-300 rounded checked:bg-[#002147] checked:border-[#002147] transition-colors" />
+                                <input 
+                                    type="checkbox" 
+                                    aria-label={`Condition ${cond.label}`}
+                                    checked={selectedConditions.includes(cond.value)}
+                                    onChange={() => onToggleCondition(cond.value)}
+                                    className="peer appearance-none w-4 h-4 border border-gray-300 rounded checked:bg-[#002147] checked:border-[#002147] transition-colors cursor-pointer" 
+                                />
                                 <Check size={10} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100 pointer-events-none" />
                             </div>
-                            <span className="text-sm text-gray-600 group-hover:text-gray-900">{cond}</span>
+                            <span className="text-sm text-gray-600 group-hover:text-gray-900">{cond.label}</span>
                         </label>
                     ))}
                 </div>
@@ -63,21 +113,29 @@ export const FilterSidebar = () => {
             <div className="mb-8">
                 <h4 className="font-bold text-sm mb-4">Price Range</h4>
                 <div className="flex items-center gap-2 mb-4">
-                    <div className="bg-gray-50 border border-gray-200 rounded px-2 py-1 w-full">
+                    <div className="bg-gray-50 border border-gray-200 rounded px-2 py-1 w-full flex items-center">
                         <span className="text-xs text-gray-400 mr-1">₦</span>
-                        <input type="number" className="bg-transparent w-full text-sm outline-none" placeholder="Min" defaultValue={10000} />
+                        <input 
+                            type="number" 
+                            aria-label="Minimum Price"
+                            value={priceRange.min || ""}
+                            onChange={(e) => onPriceChange("min", Number(e.target.value))}
+                            className="bg-transparent w-full text-sm outline-none" 
+                            placeholder="0" 
+                        />
                     </div>
                     <span className="text-gray-400">-</span>
-                    <div className="bg-gray-50 border border-gray-200 rounded px-2 py-1 w-full">
+                    <div className="bg-gray-50 border border-gray-200 rounded px-2 py-1 w-full flex items-center">
                         <span className="text-xs text-gray-400 mr-1">₦</span>
-                        <input type="number" className="bg-transparent w-full text-sm outline-none" placeholder="Max" defaultValue={50000} />
+                        <input 
+                            type="number" 
+                            aria-label="Maximum Price"
+                            value={priceRange.max || ""}
+                            onChange={(e) => onPriceChange("max", Number(e.target.value))}
+                            className="bg-transparent w-full text-sm outline-none" 
+                            placeholder="Max" 
+                        />
                     </div>
-                </div>
-                {/* Visual Slider Placeholder */}
-                <div className="relative h-1 bg-gray-200 rounded-full w-full">
-                    <div className="absolute left-[20%] right-[40%] top-0 bottom-0 bg-[#002147] rounded-full"></div>
-                    <div className="absolute left-[20%] top-1/2 -translate-y-1/2 w-3 h-3 bg-white border-2 border-[#002147] rounded-full cursor-pointer hover:scale-110 transition-transform"></div>
-                    <div className="absolute right-[40%] top-1/2 -translate-y-1/2 w-3 h-3 bg-white border-2 border-[#002147] rounded-full cursor-pointer hover:scale-110 transition-transform"></div>
                 </div>
             </div>
 
@@ -90,13 +148,25 @@ export const FilterSidebar = () => {
                     <ChevronDown size={16} className="text-gray-400" />
                 </div>
                 <div className="space-y-3">
-                    <select className="w-full text-sm border border-gray-300 rounded p-2 text-gray-600 outline-none focus:border-[#002147]">
-                        <option>Select State</option>
-                        <option>Lagos</option>
-                        <option>Abuja</option>
+                    <select 
+                        aria-label="Select State"
+                        value={location.state}
+                        onChange={(e) => onLocationChange("state", e.target.value)}
+                        className="w-full text-sm border border-gray-300 rounded p-2 text-gray-600 outline-none focus:border-[#002147] cursor-pointer"
+                    >
+                        <option value="">Select State</option>
+                        <option value="Lagos">Lagos</option>
+                        <option value="Abuja">Abuja</option>
+                        <option value="Ogun">Ogun</option>
                     </select>
-                    <select className="w-full text-sm border border-gray-300 rounded p-2 text-gray-600 outline-none focus:border-[#002147]">
-                        <option>Select Town/City</option>
+                    <select 
+                        aria-label="Select City"
+                        value={location.city}
+                        onChange={(e) => onLocationChange("city", e.target.value)}
+                        disabled={!location.state}
+                        className="w-full text-sm border border-gray-300 rounded p-2 text-gray-600 outline-none focus:border-[#002147] disabled:opacity-50 cursor-pointer"
+                    >
+                        <option value="">Select Town/City</option>
                     </select>
                 </div>
             </div>
@@ -110,15 +180,21 @@ export const FilterSidebar = () => {
                     <span className="font-bold text-sm">Verified Sellers</span>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" className="sr-only peer" />
-                    <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#D84315]"></div>
+                    <input 
+                        type="checkbox" 
+                        aria-label="Toggle Verified Sellers"
+                        checked={isVerified}
+                        onChange={onToggleVerified}
+                        className="sr-only peer" 
+                    />
+                    <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#D84315]"></div>
                 </label>
             </div>
 
             <div className="h-px bg-gray-100 w-full mb-6"></div>
 
              {/* Delivery Options */}
-             <div className="mb-8">
+            <div className="mb-8">
                 <div className="flex justify-between items-center mb-3">
                     <h4 className="font-bold text-sm">Delivery Options</h4>
                     <ChevronDown size={16} className="text-gray-400" />
@@ -126,8 +202,14 @@ export const FilterSidebar = () => {
                 <div className="space-y-2">
                     {["Delivery Available", "Pickup Only", "Both Available", "Negotiable"].map((opt) => (
                         <label key={opt} className="flex items-center gap-2 cursor-pointer group">
-                             <div className="relative flex items-center">
-                                <input type="checkbox" className="peer appearance-none w-4 h-4 border border-gray-300 rounded checked:bg-[#002147] checked:border-[#002147] transition-colors" />
+                            <div className="relative flex items-center">
+                                <input 
+                                    type="checkbox" 
+                                    aria-label={`Delivery Option ${opt}`}
+                                    checked={selectedDelivery.includes(opt)}
+                                    onChange={() => onToggleDelivery(opt)}
+                                    className="peer appearance-none w-4 h-4 border border-gray-300 rounded checked:bg-[#002147] checked:border-[#002147] transition-colors cursor-pointer" 
+                                />
                                 <Check size={10} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100 pointer-events-none" />
                             </div>
                             <span className="text-sm text-gray-600 group-hover:text-gray-900">{opt}</span>
@@ -138,8 +220,8 @@ export const FilterSidebar = () => {
 
             {/* Mobile Actions */}
             <div className="md:hidden mt-8 pt-4 border-t border-gray-100 flex gap-4">
-                <Button variant="outline" fullWidth>Clear All</Button>
-                <Button fullWidth>Show Results</Button>
+                <Button type="button" variant="outline" className="w-full" onClick={onClearAllMobile}>Clear All</Button>
+                <Button type="button" className="w-full" onClick={onCloseMobile}>Show Results</Button>
             </div>
         </aside>
     );

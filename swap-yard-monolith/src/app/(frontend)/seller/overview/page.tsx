@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Plus, ShoppingCart, Package, Image as ImageIcon } from "lucide-react";
-import { useSellerOverview } from "@/hooks/useSellerOverview";
+import { useSellerOverview } from "@/hooks/seller/useSellerOverview";
 
 export default function SellerOverview() {
     const { state, helpers } = useSellerOverview();
@@ -116,7 +116,9 @@ export default function SellerOverview() {
                                     )}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">{listing.category || "General"}</p>
+                                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        {typeof listing.category === 'object' ? listing.category?.name : (listing.category || "General")}
+                                    </p>
                                     <p className="font-bold text-gray-900 mb-0.5">{helpers.formatPrice(listing.price)}</p>
                                     <p className="text-sm text-gray-800 font-semibold truncate" title={listing.name}>{listing.name}</p>
                                     <p className="text-xs text-gray-500 capitalize mt-1 border border-gray-200 bg-white inline-block px-2 py-0.5 rounded">

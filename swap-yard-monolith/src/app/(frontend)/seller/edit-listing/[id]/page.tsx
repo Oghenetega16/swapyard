@@ -3,7 +3,7 @@
 
 import { use } from "react";
 import { Upload, X, Check, ArrowLeft, Info } from "lucide-react";
-import { useEditListing } from "@/hooks/useEditListing";
+import { useEditListing } from "@/hooks/seller/useEditListing";
 import { Toggle } from "@/components/seller/Toggle";
 import Image from "next/image";
 

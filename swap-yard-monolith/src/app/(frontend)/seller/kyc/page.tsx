@@ -1,7 +1,7 @@
 "use client";
 
 import { CheckCircle2, FileText, Shield, Upload } from "lucide-react";
-import { useSellerKyc } from "@/hooks/useSellerKyc";
+import { useSellerKyc } from "@/hooks/seller/useSellerKyc";
 import { useRef } from "react";
 
 export default function SellerGetVerified() {

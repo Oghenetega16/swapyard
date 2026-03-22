@@ -10,7 +10,11 @@ export interface RecentListing {
     id: string;
     name: string;
     price: number;
-    category: string;
+    category?: {
+        id: string;
+        name: string;
+        image: string | null;
+    } | string;
     condition: string;
     image: string | null;
 }

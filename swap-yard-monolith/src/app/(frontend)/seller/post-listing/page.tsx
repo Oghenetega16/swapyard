@@ -1,7 +1,7 @@
 "use client";
 
 import { Upload, Lightbulb, ShieldCheck, X, Check } from "lucide-react";
-import { usePostListing } from "@/hooks/usePostListing";
+import { usePostListing } from "@/hooks/seller/usePostListing";
 import { Toggle } from "@/components/seller/Toggle";
 
 export default function PostListingForm() {
@@ -83,17 +83,23 @@ export default function PostListingForm() {
                             <h3 className="text-xl font-bold text-[#002147] mb-4">Category</h3>
                             <div className="space-y-4">
                                 <div>
-                                    <label htmlFor="category" className="block text-sm text-gray-700 mb-1.5">Item Category</label>
+                                    <label htmlFor="categoryId" className="block text-sm text-gray-700 mb-1.5">Item Category</label>
                                     <select 
-                                        id="category" 
-                                        value={state.category}
-                                        onChange={(e) => setters.setCategory(e.target.value)}
+                                        id="categoryId" 
+                                        value={state.categoryId} // <-- FIXED: Changed to categoryId
+                                        onChange={(e) => setters.setCategoryId(e.target.value)} // <-- FIXED: Changed to setCategoryId
                                         aria-label="Select item category"
                                         className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#002147] bg-white appearance-none cursor-pointer"
                                     >
-                                        <option value="">Enter Item Category</option>
-                                        <option value="Furniture">Furniture</option>
-                                        <option value="Electronics">Electronics</option>
+                                        <option value="">Select Category</option>
+                                        {/* FIXED: Map over the dynamic categories from your backend */}
+                                        {state.categories.length === 0 ? (
+                                            <option disabled>Loading categories...</option>
+                                        ) : (
+                                            state.categories.map((cat) => (
+                                                <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                            ))
+                                        )}
                                     </select>
                                 </div>
                                 <div>

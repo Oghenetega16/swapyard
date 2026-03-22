@@ -133,9 +133,6 @@ export async function POST(req: Request) {
       },
     });
 
-
-
-
     // Initialize Paystack: Fails for now since no paystack integration yet
     const paystackRes = await fetch("https://api.paystack.co/transaction/initialize", {
       method: "POST",

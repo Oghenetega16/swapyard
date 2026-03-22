@@ -2,7 +2,7 @@
 
 import { Search, Send, Paperclip, MoreVertical, Image as ImageIcon } from "lucide-react";
 import Image from "next/image";
-import { useSellerMessages } from "@/hooks/useSellerMessages";
+import { useSellerMessages } from "@/hooks/seller/useSellerMessages";
 
 export default function SellerMessages() {
     const { state, setters, handlers } = useSellerMessages();

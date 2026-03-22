@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { CheckCircle2, Pencil, Save, X, Camera } from "lucide-react";
-import { useSellerAccount } from "@/hooks/useSellerAccount";
+import { useSellerAccount } from "@/hooks/seller/useSellerAccount";
 
 export default function SellerAccount() {
   const { state, setters, refs, handlers } = useSellerAccount();

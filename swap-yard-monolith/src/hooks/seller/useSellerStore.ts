@@ -7,7 +7,11 @@ export interface Listing {
     price: number;
     condition: string;
     status: string;
-    category?: string; 
+    category?: {
+        id: string;
+        name: string;
+        image: string | null;
+    } | string;
     views?: number;    
     images: { url: string }[];
 }
@@ -123,9 +127,11 @@ export function useSellerStore() {
     };
 
     // NEW: Fetch Reviews Function
+    // NEW: Fetch Reviews Function
     const fetchReviews = async (sellerId: string) => {
         try {
-            const res = await fetch(`/api/reviews?sellerId=${sellerId}&limit=50`);
+            // FIX: Changed /api/reviews to /api/review to match the backend folder name
+            const res = await fetch(`/api/review?sellerId=${sellerId}&limit=50`);
             const data = await res.json();
 
             if (!res.ok) throw new Error(data.message || "Failed to fetch reviews");
@@ -207,8 +213,8 @@ export function useSellerStore() {
             itemToDelete, 
             error, 
             sellerProfile,
-            reviews,      // Expose reviews
-            reviewStats   // Expose review stats
+            reviews,      
+            reviewStats   
         },
         setters: { setSearchQuery, setStatusFilter },
         handlers: { handleEdit, confirmDelete, cancelDelete, executeDelete },
